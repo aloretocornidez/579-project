@@ -1,3 +1,3 @@
 # external directory
 
-This directory is used to host external libraries in the github.
+This directory is used for external libraries if we choose to use them.
