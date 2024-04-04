@@ -1,4 +1,4 @@
-This will be on a scole from 0-10
+This will be on a scale from 0-10
 1-7: 4
 2-4: 1
 2-3: 0.5
