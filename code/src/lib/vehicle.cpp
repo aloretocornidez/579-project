@@ -1,6 +1,7 @@
 #include "vehicle.hpp"
+#include <iostream>
 
-
-void printVehicle(){
+void printVehicle()
+{
   std::cout << "Print Vehicle" << std::endl;
 }

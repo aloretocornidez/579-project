@@ -1,8 +1,7 @@
 #include "node.hpp"
+#include <iostream>
 
-
-
-void printNode(){
+void printNode()
+{
   std::cout << "Print Node" << std::endl;
 }
-

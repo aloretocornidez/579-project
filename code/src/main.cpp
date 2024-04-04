@@ -1,10 +1,9 @@
-#include <iostream>
+#include "lib/account.hpp"
 #include "lib/edge.hpp"
 #include "lib/node.hpp"
-#include "lib/account.hpp"
-#include "lib/vehicle.hpp"
 #include "lib/trafficCondition.hpp"
-
+#include "lib/vehicle.hpp"
+#include <iostream>
 
 void testAllIncludes()
 {
@@ -14,12 +13,12 @@ void testAllIncludes()
   printAccount();
   printVehicle();
   printTrafficCondition();
-
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
 
   testAllIncludes();
-  
+
   return 0;
 }

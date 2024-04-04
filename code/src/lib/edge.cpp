@@ -1,5 +1,7 @@
 #include "edge.hpp"
+#include <iostream>
 
-void printEdge(){
+void printEdge()
+{
   std::cout << "Print Edge" << std::endl;
 }
