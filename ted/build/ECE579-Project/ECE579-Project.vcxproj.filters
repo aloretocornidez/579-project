@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="db">
+      <UniqueIdentifier>{036345b0-ea1a-4453-b543-a7b1a4397472}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\db\EdgeDatabase.cpp">
+      <Filter>db</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\db\NodeDatabase.cpp">
+      <Filter>db</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\AStar.cpp" />
+    <ClCompile Include="..\..\src\Main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\db\EdgeDatabase.h">
+      <Filter>db</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\db\NodeDatabase.h">
+      <Filter>db</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\AStar.h" />
+  </ItemGroup>
+</Project>

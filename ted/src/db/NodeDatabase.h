@@ -26,9 +26,6 @@ enum class NodeDatabaseStatus : unsigned int
 class NodeDatabase
 {
 public:
-    NodeDatabase();
-    ~NodeDatabase();
-
     struct NodeDatabaseType
     {
         unsigned int id;
@@ -41,6 +38,9 @@ public:
         unsigned int numNeighbors;
         unsigned int neighbor[10];
     };
+
+    NodeDatabase();
+    ~NodeDatabase();
 
     NodeDatabaseStatus read(const char * filename);
     double lineOfSight(unsigned int nId1, unsigned int nId2, NodeDatabaseStatus & status);

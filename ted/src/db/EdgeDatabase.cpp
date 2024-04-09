@@ -78,7 +78,7 @@ EdgeDatabaseStatus EdgeDatabase::read(const char * filename)
                 printf("ERROR: (EdgeDatabase::read) Bad mode!\n");
             }
 
-            db_.push_back(e);
+            db_[std::make_pair(e.src, e.dest)] = e;
         }
 
         if (EdgeDatabaseStatus::UNKNOWN == retVal)
@@ -99,11 +99,12 @@ EdgeDatabaseStatus EdgeDatabase::read(const char * filename)
 
 void EdgeDatabase::print()
 {
-    for (std::vector<struct EdgeDatabaseType>::iterator it = db_.begin(); it != db_.end(); ++it)
+    for (std::map<std::pair<unsigned int, unsigned int>, struct EdgeDatabaseType>::iterator it(db_.begin()); 
+         it != db_.end(); ++it)
     {
-        printf("%2u -> %2u, dist = %f, straight = %f, mode = ", (*it).src, (*it).dest, (*it).dist_mile, (*it).straight_mile);
+        printf("%2u -> %2u, dist = %f, straight = %f, mode = ", (it->second).src, (it->second).dest, (it->second).dist_mile, (it->second).straight_mile);
 
-        switch((*it).mode)
+        switch((it->second).mode)
         {
         case EdgeDatabaseMode::UNAVAILABLE:
             printf("UNAVAILABLE\n");

@@ -11,6 +11,7 @@
 
 #include <cstdio>
 
+#include "AStar.h"
 #include "EdgeDatabase.h"
 #include "NodeDatabase.h"
 
@@ -18,14 +19,14 @@ int main()
 {
     EdgeDatabase edb;
     edb.read("../../data/edge.csv");
-    edb.print();
+    //edb.print();
 
-    //NodeDatabase ndb;
-    //ndb.read("../../data/node.csv");
+    NodeDatabase ndb;
+    ndb.read("../../data/node.csv");
     //ndb.print();
 
-    //NodeDatabaseStatus status;
-    //printf("\n%f\n", ndb.lineOfSight(6,52,status));
+    AStar a(edb, ndb);
+    a.solve(6, 52);
 
     return 0;
 }

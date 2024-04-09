@@ -12,7 +12,7 @@
 #ifndef EDGE_DATABASE_H
 #define EDGE_DATABASE_H
 
-#include <vector>
+#include <map>
 
 enum class EdgeDatabaseStatus : unsigned int
 {
@@ -26,9 +26,6 @@ enum class EdgeDatabaseStatus : unsigned int
 class EdgeDatabase
 {
 public:
-    EdgeDatabase();
-    ~EdgeDatabase();
-
     enum class EdgeDatabaseMode : unsigned int
     {
         UNAVAILABLE,
@@ -47,10 +44,13 @@ public:
         EdgeDatabaseMode mode;
     };
 
+    EdgeDatabase();
+    ~EdgeDatabase();
+
     EdgeDatabaseStatus read(const char * filename);
     void print();
 
-    std::vector<struct EdgeDatabaseType> db_;
+    std::map<std::pair<unsigned int, unsigned int>, struct EdgeDatabaseType> db_;
 
 private:
     static const double FT_IN_MILE;

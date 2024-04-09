@@ -72,6 +72,7 @@ NodeDatabaseStatus NodeDatabase::read(const char * filename)
             n.isIntersection = (inter == 1);
 
             n.numNeighbors = 0;
+            memset(n.neighbor, 0, sizeof(n.neighbor));
             while (ss >> neighbor)
             {
                 n.neighbor[n.numNeighbors] = neighbor;
@@ -116,6 +117,7 @@ double NodeDatabase::lineOfSight(unsigned int nId1, unsigned int nId2, NodeDatab
     }
     else
     {
+        printf("ERROR: (NodeDatabase::lineOfSight) Node ID not found!\n");
         retVal = NodeDatabaseStatus::NODE_INVALID_ID;
     }
     
@@ -125,7 +127,8 @@ double NodeDatabase::lineOfSight(unsigned int nId1, unsigned int nId2, NodeDatab
 
 void NodeDatabase::print()
 {
-    for (std::map<unsigned int, struct NodeDatabaseType>::iterator it = db_.begin(); it != db_.end(); ++it)
+    for (std::map<unsigned int, struct NodeDatabaseType>::iterator it(db_.begin()); 
+         it != db_.end(); ++it)
     {
         printf("%2u: (%f,%f) ", (it->second).id, (it->second).latitude, (it->second).longitude);
 
@@ -149,7 +152,7 @@ void NodeDatabase::print()
             printf("Intersecton ");
         }
 
-        printf("- ");
+        printf("- (%d) ", (it->second).numNeighbors);
 
         for (unsigned int i(0); i < (it->second).numNeighbors; ++i)
         {
