@@ -1,24 +1,30 @@
-#include "lib/account.hpp"
-#include "lib/edge.hpp"
-#include "lib/node.hpp"
-#include "lib/trafficCondition.hpp"
-#include "lib/vehicle.hpp"
-#include <iostream>
+//
+// ECE 579 (Spring 2024)
+// Project
+//
+// Authors:
+//     Alan Manuel Loreto Cornidez (aloretocornidez)
+//     Elliot Zeurcher (ezuercher)
+//     Eric Teitelbaum (ericteitelbaum)
+//     Ted Ha (ttha)
+//
 
-void testAllIncludes()
+#include "./db/EdgeDatabase.h"
+#include "./db/NodeDatabase.h"
+#include "AStar.h"
+
+int main()
 {
-  std::cout << "Hello World!" << std::endl;
-  printEdge();
-  printNode();
-  printAccount();
-  printVehicle();
-  printTrafficCondition();
-}
+  EdgeDatabase edb;
+  edb.read("../data/edge.csv");
+  // edb.print();
 
-int main(int argc, char *argv[])
-{
+  NodeDatabase ndb;
+  ndb.read("../data/node.csv");
+  // ndb.print();
 
-  testAllIncludes();
+  AStar a(edb, ndb);
+  a.solve(6, 52);
 
   return 0;
 }
