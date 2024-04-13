@@ -1,4 +1,4 @@
-# ECE 579 Project Base Directory 
+# ECE 579 Project Base Directory
 
 This is the base directory where you can run builds.
 
@@ -10,25 +10,25 @@ Project structure is as follows:
 .
 ├── CMakeLists.txt
 ├── compile.sh
+├── data
+│   ├── edge.csv
+│   └── node.csv
 ├── external
 │   ├── CMakeLists.txt
 │   └── readme.md
 ├── readme.md
 └── src
+    ├── AStar.cpp
+    ├── AStar.h
     ├── CMakeLists.txt
-    ├── lib
-    │   ├── account.cpp
-    │   ├── account.hpp
+    ├── db
     │   ├── CMakeLists.txt
-    │   ├── edge.cpp
-    │   ├── edge.hpp
-    │   ├── node.cpp
-    │   ├── node.hpp
-    │   ├── readme.md
-    │   ├── trafficCondition.cpp
-    │   ├── trafficCondition.hpp
-    │   ├── vehicle.cpp
-    │   └── vehicle.hpp
+    │   ├── EdgeDatabase.cpp
+    │   ├── EdgeDatabase.h
+    │   ├── NodeDatabase.cpp
+    │   └── NodeDatabase.h
     ├── main.cpp
     └── readme.md
+
+5 directories, 17 files
 ```

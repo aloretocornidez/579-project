@@ -196,7 +196,7 @@ AStar::Location *AStar::createNode(unsigned int id, AStarStatus &status)
     // Update the ID of the created node.
     n->id = loc_.db_[id].id;
 
-    // Embed the A-Star heuristic data.
+    // Initialize to max possible cost.
     n->f = std::numeric_limits<double>::max();
     n->g = std::numeric_limits<double>::max();
     n->h = std::numeric_limits<double>::max();

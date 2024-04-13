@@ -51,6 +51,7 @@ NodeDatabaseStatus NodeDatabase::read(const char *filename)
 
       std::stringstream ss(line);
 
+      // Check if there is bad formatting and report it, no error thrown.
       if (!(ss >> n.id >> comma)) retVal = NodeDatabaseStatus::NODE_BAD_FORMAT;
       if (!(ss >> n.latitude >> comma)) retVal = NodeDatabaseStatus::NODE_BAD_FORMAT;
       if (!(ss >> n.longitude >> comma)) retVal = NodeDatabaseStatus::NODE_BAD_FORMAT;
