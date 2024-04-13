@@ -47,9 +47,14 @@ public:
   EdgeDatabase();
   ~EdgeDatabase();
 
+  // Reads the data from the CSV file and populates the data into the database map.
   EdgeDatabaseStatus read(const char *filename);
+
   void print();
 
+  // The database is stored in a map using the.
+  // source node ID and Destination node ID as keys.
+  // The edge parameters as the key value.
   std::map<std::pair<unsigned int, unsigned int>, struct EdgeDatabaseType> db_;
 
 private:

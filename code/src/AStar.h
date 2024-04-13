@@ -31,17 +31,27 @@ class AStar
 public:
   static const unsigned int MAX_CHILDREN = 6; // # of max possible children will change
 
-  struct Node
+  // TODO: Add an implementation for a traveler (this will keep track of
+  // available options for the A-Star algorithm to find a solution path.)
+  typedef struct Traveller
+  {
+    bool canWalk;
+    bool canBike;
+    bool canCatTran;
+  } Traveller;
+
+  typedef struct Location
   {
     unsigned int id;
     double f;
     double g;
     double h;
-    unsigned int numChildren;
-    struct Node *parent;
-    struct Node *children[MAX_CHILDREN];
-  };
+    unsigned int numDestinations;
+    Location *parent;
+    Location *children[MAX_CHILDREN];
+  } Location;
 
+  AStar(EdgeDatabase &eDb, NodeDatabase &nDb, Traveller &traveller);
   AStar(EdgeDatabase &eDb, NodeDatabase &nDb);
   ~AStar();
 
@@ -53,34 +63,45 @@ private:
 
   AStarStatus run();
 
-  struct Node *createNode(unsigned int id, AStarStatus &status);
+  Location *createNode(unsigned int id, AStarStatus &status);
 
   double heuristic(unsigned int id);
 
-  AStarStatus findChildren(struct Node *n);
+  AStarStatus findChildren(Location *n);
 
-  bool isOpen(struct Node *n);
-  bool isClosed(struct Node *n);
+  bool isOpen(Location *n);
+  bool isClosed(Location *n);
 
-  void addToOpen(struct Node *n);
-  void updateOpen(struct Node *n);
+  void addToOpen(Location *n);
+  void updateOpen(Location *n);
 
-  void reconstructPath(struct Node *n);
+  void reconstructPath(Location *n);
 
+  // Pathways (Edges)
   EdgeDatabase &path_;
+  // Locations (Nodes)
   NodeDatabase &loc_;
 
-  std::list<struct Node *> open_;
-  std::list<struct Node *> closed_;
+  // Open queue.
+  std::list<Location *> open_;
+  // Closed queue.
+  std::list<Location *> closed_;
 
-  std::list<struct Node *> solution_;
+  // Solution path.
+  std::list<Location *> solution_;
 
-  std::list<struct Node *> nodeList_;
+  // Keep track of all allocated memory.
+  std::list<Location *> nodeList_;
 
+  // Start nodes
   unsigned int startId_;
+  // Goal nodes
   unsigned int goalId_;
 
-  struct Node *goal_;
+  // Pointer to the goal node
+  Location *goal_;
+
+  Traveller traveller_;
 };
 
 #endif /* A_STAR_H */

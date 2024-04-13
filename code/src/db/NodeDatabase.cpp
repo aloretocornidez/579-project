@@ -19,8 +19,7 @@
 #include "NodeDatabase.h"
 
 const double NodeDatabase::PI(3.14159265359);
-const double NodeDatabase::EARTH_R(6372818.0); // Radius of Earth for Tucson (Latitude = 32.235,
-                                               // 2389ft above Sea Level)
+const double NodeDatabase::EARTH_R(6372818.0); // Radius of Earth for Tucson (Latitude = 32.235, 2389ft above Sea Level)
 const double NodeDatabase::METER_TO_FOOT(3.2808399999999888763);
 const double NodeDatabase::METER_TO_MILE(0.00062137121212121);
 
@@ -136,7 +135,7 @@ void NodeDatabase::print()
 
     if (true == (it->second).isCatTranStop)
     {
-      printf("CalTranStop ");
+      printf("CatTranStop ");
     }
 
     if (true == (it->second).isBikeDepot)

@@ -15,6 +15,8 @@
 #include <stdexcept>
 #include <stdio.h>
 
+AStar::AStar(EdgeDatabase &eDb, NodeDatabase &nDb, Traveller &traveller) : path_(eDb), loc_(nDb), startId_(0), goalId_(0), goal_(nullptr), traveller_(traveller) {}
+
 AStar::AStar(EdgeDatabase &eDb, NodeDatabase &nDb) : path_(eDb), loc_(nDb), startId_(0), goalId_(0), goal_(nullptr) {}
 
 AStar::~AStar() {}
@@ -38,7 +40,7 @@ AStarStatus AStar::solve(unsigned int startId, unsigned int goalId)
   // auto end{ std::chrono::high_resolution_clock::now() };
   // std::chrono::duration<double> elapsedSec{ end - start };
   // printf("  Elapsed: %lld ns\n",
-  //     std::chrono::duration_cast<std::chrono::nanoseconds>(elapsedSec).count());
+  // std::chrono::duration_cast<std::chrono::nanoseconds>(elapsedSec).count());
 
   return retVal;
 }
@@ -49,7 +51,7 @@ AStarStatus AStar::initialize()
 
   if (open_.empty() && closed_.empty() && nodeList_.empty())
   {
-    struct Node *n = createNode(startId_, retVal);
+    Location *n = createNode(startId_, retVal);
     if ((AStarStatus::ASTAR_OK == retVal) && (nullptr != n))
     {
       n->g = 0;
@@ -70,7 +72,7 @@ AStarStatus AStar::initialize()
 
 void AStar::finalize()
 {
-  for (std::list<struct Node *>::iterator it(nodeList_.begin()); it != nodeList_.end(); ++it)
+  for (std::list<Location *>::iterator it(nodeList_.begin()); it != nodeList_.end(); ++it)
   {
     if (*it != 0)
     {
@@ -91,12 +93,11 @@ AStarStatus AStar::run()
 {
   AStarStatus retVal(AStarStatus::UNKNOWN);
 
-  struct Node *currNode(0);
+  Location *currNode(0);
   bool foundGoal(false);
 
   while ((false == foundGoal) && (false == open_.empty()))
   {
-    //
     // 1. Find the lowest f in the open list, place it in the closed list
     currNode = open_.front();
     open_.pop_front();
@@ -115,8 +116,8 @@ AStarStatus AStar::run()
     retVal = findChildren(currNode);
 
     // 3. For each child
-    struct Node *child(nullptr);
-    for (unsigned int i(0); i < (currNode->numChildren); ++i)
+    Location *child(nullptr);
+    for (unsigned int i(0); i < (currNode->numDestinations); ++i)
     {
       child = currNode->children[i];
 
@@ -173,30 +174,43 @@ AStarStatus AStar::run()
   return retVal;
 }
 
-struct AStar::Node *AStar::createNode(unsigned int id, AStarStatus &status)
+AStar::Location *AStar::createNode(unsigned int id, AStarStatus &status)
 {
   status = AStarStatus::UNKNOWN;
-  struct Node *n(nullptr);
 
+  // Create a temporary node initialized with nullptr.
+  Location *n(nullptr);
+
+  // If the id is not the end of the database, proceed.
   if (loc_.db_.find(id) != loc_.db_.end())
   {
-    n = new struct Node;
+    // Create a new node.
+    n = new Location;
+
+    // Add the generated node to keep track of memory.
     nodeList_.push_back(n);
 
+    // Update the ID of the created node.
     n->id = loc_.db_[id].id;
 
+    // Embed the A-Star heuristic data.
     n->f = std::numeric_limits<double>::max();
     n->g = std::numeric_limits<double>::max();
     n->h = std::numeric_limits<double>::max();
 
+    // Initialize a 0 value for the parent.
     n->parent = 0;
+    // Initialize the number of children to 0.
+    n->numDestinations = 0;
 
-    n->numChildren = 0;
+    // Make sure the rest of the data is set to 0.
     memset(n->children, 0, sizeof(n->children));
 
+    // Set an okay return status.
     status = AStarStatus::ASTAR_OK;
   }
 
+  // Return the address of the created node.
   return n;
 }
 
@@ -206,19 +220,30 @@ double AStar::heuristic(unsigned int id)
   return loc_.lineOfSight(id, goalId_, status);
 }
 
-AStarStatus AStar::findChildren(struct Node *n)
+// TODO: Modify Find Children Function to take transportation method into
+// account.
+AStarStatus AStar::findChildren(Location *n)
 {
+  // Return value for success in child generation.
   AStarStatus retVal(AStarStatus::UNKNOWN);
 
+  // Find the data of the node that was passed as input.
   struct NodeDatabase::NodeDatabaseType &nData(loc_.db_[n->id]);
+
+  // id is used to populate the edge's id fields.
   unsigned int id1(0);
   unsigned int id2(0);
 
-  n->numChildren = nData.numNeighbors;
+  // Get the possible number of children for the current node.
+  n->numDestinations = nData.numNeighbors;
 
+  //
   for (unsigned int i(0); i < nData.numNeighbors; ++i)
   {
-    struct Node *c = createNode(nData.neighbor[i], retVal);
+    // // Creates a node from the possible children.
+    Location *c = createNode(nData.neighbor[i], retVal);
+
+    // If the node is created successfully.
     if (AStarStatus::ASTAR_OK == retVal)
     {
       try
@@ -251,9 +276,9 @@ AStarStatus AStar::findChildren(struct Node *n)
   return retVal;
 }
 
-bool AStar::isOpen(struct Node *n)
+bool AStar::isOpen(Location *n)
 {
-  for (std::list<struct Node *>::iterator it(open_.begin()); it != open_.end(); ++it)
+  for (std::list<Location *>::iterator it(open_.begin()); it != open_.end(); ++it)
   {
     if (((*it)->id) == (n->id))
     {
@@ -264,9 +289,9 @@ bool AStar::isOpen(struct Node *n)
   return false;
 }
 
-bool AStar::isClosed(struct Node *n)
+bool AStar::isClosed(Location *n)
 {
-  for (std::list<struct Node *>::iterator it(closed_.begin()); it != closed_.end(); ++it)
+  for (std::list<Location *>::iterator it(closed_.begin()); it != closed_.end(); ++it)
   {
     if (((*it)->id) == (n->id))
     {
@@ -277,17 +302,17 @@ bool AStar::isClosed(struct Node *n)
   return false;
 }
 
-bool compare_node(AStar::Node *n1, AStar::Node *n2) { return n1->f < n2->f; }
+bool compare_node(AStar::Location *n1, AStar::Location *n2) { return n1->f < n2->f; }
 
-void AStar::addToOpen(struct Node *n)
+void AStar::addToOpen(Location *n)
 {
   open_.push_back(n);
   open_.sort(compare_node);
 }
 
-void AStar::updateOpen(struct Node *n)
+void AStar::updateOpen(Location *n)
 {
-  for (std::list<struct Node *>::iterator it(open_.begin()); it != open_.end(); ++it)
+  for (std::list<Location *>::iterator it(open_.begin()); it != open_.end(); ++it)
   {
     if (((*it)->id) == (n->id))
     {
@@ -301,11 +326,11 @@ void AStar::updateOpen(struct Node *n)
   }
 }
 
-void AStar::reconstructPath(struct Node *n)
+void AStar::reconstructPath(Location *n)
 {
   solution_.clear();
 
-  struct Node *currNode = n;
+  Location *currNode = n;
 
   // To print the solution from the start node,
   // push parent nodes in the front of the solution list
@@ -316,7 +341,7 @@ void AStar::reconstructPath(struct Node *n)
   }
 
   unsigned int order(1);
-  for (std::list<struct Node *>::iterator it(solution_.begin()); it != solution_.end(); ++it)
+  for (std::list<Location *>::iterator it(solution_.begin()); it != solution_.end(); ++it)
   {
     printf("  %2d:  %d  (%f)\n", order, (*it)->id, (*it)->g);
     ++order;
