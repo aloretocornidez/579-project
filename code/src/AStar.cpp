@@ -231,7 +231,7 @@ AStarStatus AStar::findChildren(struct Node *n)
         struct EdgeDatabase::EdgeDatabaseType &eData = path_.db_.at(std::make_pair(id1, id2));
 
         c->g = n->g + eData.dist_mile;
-        c->h = heuritic(c->id);
+        c->h = heuristic(c->id);
         c->f = c->g + c->h;
 
         c->parent = n;
