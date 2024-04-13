@@ -181,6 +181,9 @@ AStar::Location *AStar::createNode(unsigned int id, AStarStatus &status)
   // Create a temporary node initialized with nullptr.
   Location *n(nullptr);
 
+  // TODO: Make sure to take into account, the ID of the location being
+  // separate from the node ID in the search tree of the algorithm.
+
   // If the id is not the end of the database, proceed.
   if (loc_.db_.find(id) != loc_.db_.end())
   {

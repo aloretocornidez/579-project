@@ -1,8 +1,0 @@
----
-UseTab: Never
-IndentWidth: 2
-BreakBeforeBraces: Allman
-AllowShortIfStatementsOnASingleLine: true
-IndentCaseLabels: false
-ColumnLimit: 1000000
-...

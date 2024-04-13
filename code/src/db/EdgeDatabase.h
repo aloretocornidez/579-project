@@ -47,7 +47,8 @@ public:
   EdgeDatabase();
   ~EdgeDatabase();
 
-  // Reads the data from the CSV file and populates the data into the database map.
+  // Reads the data from the CSV file and populates the data into the database
+  // map.
   EdgeDatabaseStatus read(const char *filename);
 
   void print();
