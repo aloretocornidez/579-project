@@ -38,16 +38,15 @@ enum class ArrivalMethod : unsigned int
 
 class AStar
 {
-public:
-  static const unsigned int MAX_CHILDREN = 6; // # of max possible children will change
 
-  // TODO: Add an implementation for a traveler (this will keep track of
-  // available options for the A-Star algorithm to find a solution path.)
+public:
+
+  static const unsigned int MAX_CHILDREN = 6; // # of max possible children will change TO DO: Drop me?
 
   typedef struct Node_s
   {
     // Used to identify the node in the search tree.
-    unsigned int node_id;
+    unsigned int node_id;  // TO DO: I think this may be unneccessary, we detect equivalence by comparing other node properties
     // Used to id the physical location that the node pertains to.
     unsigned int location_id;
 
@@ -56,12 +55,12 @@ public:
     double g;
     double h;
 
-    // Transportation methods available.
+    // Method by which we arrived at the node
     ArrivalMethod arrivalMethod;
 
     // unsigned int numDestinations;
     Node_s *parent;
-    Node_s *children[MAX_CHILDREN];
+    Node_s *children[MAX_CHILDREN];  // TO DO: Drop me?
 
   } Node;
 
@@ -71,6 +70,7 @@ public:
   AStarStatus solve(unsigned int startId, unsigned int goalId);
 
 private:
+
   AStarStatus initialize();
   void finalize();
 
@@ -90,9 +90,9 @@ private:
 
   void reconstructPath(Node *n);
 
-  // Pathways (Edges)
+  // Pathways
   PathDatabase &path_;
-  // Locations (Nodes)
+  // Locations
   LocationDatabase &loc_;
 
   // Open queue.
@@ -106,9 +106,9 @@ private:
   // Keep track of all allocated memory.
   std::list<Node *> nodeList_;
 
-  // Start nodes
+  // Start location
   unsigned int startId_;
-  // Goal nodes
+  // Goal location
   unsigned int goalId_;
 
   // Pointer to the goal node
@@ -116,7 +116,6 @@ private:
 
   unsigned int node_id_counter;
 
-  ArrivalMethod traveller_;
 };
 
 #endif /* A_STAR_H */

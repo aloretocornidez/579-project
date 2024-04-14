@@ -51,12 +51,12 @@ AStarStatus AStar::initialize()
   // If the queues are empty, initialize them.
   if (open_.empty() && closed_.empty() && nodeList_.empty())
   {
-    // Create the initial node with a given ID.
+    // Create the initial node with a given location ID
     Node *n = createNode(startId_, retVal);
     if ((AStarStatus::ASTAR_OK == retVal) && (nullptr != n))
     {
       n->g = 0;
-      n->h = heuristic(n->node_id);
+      n->h = heuristic(n->location_id);
       n->f = n->g + n->h;
 
       open_.push_back(n);
@@ -101,13 +101,13 @@ AStarStatus AStar::run()
   while ((false == foundGoal) && (false == open_.empty()))
   {
     // 1. Find the lowest f in the open list, place it in the closed list
-    currNode = open_.front();
+    currNode = open_.front();  //TO DO: Where is the open queue being sorted?
     open_.pop_front();
 
     closed_.push_back(currNode);
 
     // 1a. If the current node is a goal node, end search
-    if (goalId_ == currNode->node_id)
+    if (goalId_ == currNode->location_id)
     {
       foundGoal = true;
       goal_ = currNode;
@@ -118,6 +118,7 @@ AStarStatus AStar::run()
     retVal = findChildren(currNode);
 
     // 3. For each child
+    // TO DO: Refactor this based on output of updated findChildren() method
     Node *child(nullptr);
     for (unsigned int i(0); i < (currNode->numDestinations); ++i)
     {
@@ -130,7 +131,7 @@ AStarStatus AStar::run()
       }
 
       // 3b. If a goal node, end search
-      if (goalId_ == child->node_id)
+      if (goalId_ == child->location_id)  //Huh? Don't think this check should be here.
       {
         foundGoal = true;
         goal_ = child;
@@ -231,15 +232,14 @@ double AStar::heuristic(unsigned int id)
   return loc_.lineOfSight(id, goalId_, status);
 }
 
-// TODO: Modify Find Children Function to take transportation method into
-// account.
+// TO DO: Rework this function using Elliot's psuedocode
 AStarStatus AStar::findChildren(Node *n)
 {
   // Return value for success in child generation.
   AStarStatus retVal(AStarStatus::UNKNOWN);
 
   // Find the data of the node that was passed as input.
-  struct LocationDatabase::Location &nData(loc_.db_[n->node_id]);
+  struct LocationDatabase::Location &nData(loc_.db_[n->location_id]);
 
   // id is used to populate the edge's id fields.
   unsigned int id1(0);
@@ -286,11 +286,12 @@ AStarStatus AStar::findChildren(Node *n)
   return retVal;
 }
 
+//TO DO: it will be necessary to check ALL node properties except node_id to detect equivalence
 bool AStar::isOpen(Node *n)
 {
   for (std::list<Node *>::iterator it(open_.begin()); it != open_.end(); ++it)
   {
-    if (((*it)->node_id) == (n->node_id))
+    if (((*it)->location_id) == (n->location_id))
     {
       return true;
     }
@@ -299,6 +300,7 @@ bool AStar::isOpen(Node *n)
   return false;
 }
 
+//TO DO: it will be necessary to check ALL node properties except node_id to detect equivalence
 bool AStar::isClosed(Node *n)
 {
   for (std::list<Node *>::iterator it(closed_.begin()); it != closed_.end(); ++it)
@@ -320,6 +322,7 @@ void AStar::addToOpen(Node *n)
   open_.sort(compare_node);
 }
 
+//TO DO: it will be necessary to check ALL node properties except node_id to detect equivalence
 void AStar::updateOpen(Node *n)
 {
   for (std::list<Node *>::iterator it(open_.begin()); it != open_.end(); ++it)
