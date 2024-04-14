@@ -19,8 +19,8 @@ int main()
   edb.read("../data/paths.csv");
   // edb.print();
 
-  NodeDatabase ndb;
-  ndb.read("../data/node.csv");
+  LocationDatabase ndb;
+  ndb.read("../data/locations.csv");
   // ndb.print();
 
   AStar a(edb, ndb);

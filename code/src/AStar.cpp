@@ -15,9 +15,9 @@
 #include <stdexcept>
 #include <stdio.h>
 
-AStar::AStar(PathDatabase &eDb, NodeDatabase &nDb, Traveller &traveller) : path_(eDb), loc_(nDb), startId_(0), goalId_(0), goal_(nullptr), traveller_(traveller) {}
+AStar::AStar(PathDatabase &eDb, LocationDatabase &nDb, Traveller &traveller) : path_(eDb), loc_(nDb), startId_(0), goalId_(0), goal_(nullptr), traveller_(traveller) {}
 
-AStar::AStar(PathDatabase &eDb, NodeDatabase &nDb) : path_(eDb), loc_(nDb), startId_(0), goalId_(0), goal_(nullptr) {}
+AStar::AStar(PathDatabase &eDb, LocationDatabase &nDb) : path_(eDb), loc_(nDb), startId_(0), goalId_(0), goal_(nullptr) {}
 
 AStar::~AStar() {}
 
@@ -194,7 +194,7 @@ AStar::Location *AStar::createNode(unsigned int id, AStarStatus &status)
     nodeList_.push_back(n);
 
     // Update the ID of the created node.
-    n->id = loc_.db_[id].id;
+    n->id = loc_.db_[id].location_id;
 
     // Initialize to max possible cost.
     n->f = std::numeric_limits<double>::max();
@@ -219,7 +219,7 @@ AStar::Location *AStar::createNode(unsigned int id, AStarStatus &status)
 
 double AStar::heuristic(unsigned int id)
 {
-  NodeDatabaseStatus status(NodeDatabaseStatus::UNKNOWN);
+  LocationDatabaseStatus status(LocationDatabaseStatus::UNKNOWN);
   return loc_.lineOfSight(id, goalId_, status);
 }
 
@@ -231,7 +231,7 @@ AStarStatus AStar::findChildren(Location *n)
   AStarStatus retVal(AStarStatus::UNKNOWN);
 
   // Find the data of the node that was passed as input.
-  struct NodeDatabase::NodeDatabaseType &nData(loc_.db_[n->id]);
+  struct LocationDatabase::LocationDatabaseType &nData(loc_.db_[n->id]);
 
   // id is used to populate the edge's id fields.
   unsigned int id1(0);

@@ -51,8 +51,8 @@ public:
     Location *children[MAX_CHILDREN];
   } Location;
 
-  AStar(PathDatabase &eDb, NodeDatabase &nDb, Traveller &traveller);
-  AStar(PathDatabase &eDb, NodeDatabase &nDb);
+  AStar(PathDatabase &eDb, LocationDatabase &nDb, Traveller &traveller);
+  AStar(PathDatabase &eDb, LocationDatabase &nDb);
   ~AStar();
 
   AStarStatus solve(unsigned int startId, unsigned int goalId);
@@ -80,7 +80,7 @@ private:
   // Pathways (Edges)
   PathDatabase &path_;
   // Locations (Nodes)
-  NodeDatabase &loc_;
+  LocationDatabase &loc_;
 
   // Open queue.
   std::list<Location *> open_;

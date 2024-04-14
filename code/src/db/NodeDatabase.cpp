@@ -18,25 +18,25 @@
 
 #include "NodeDatabase.h"
 
-const double NodeDatabase::PI(3.14159265359);
-const double NodeDatabase::EARTH_R(6372817.0); // Radius of Earth for Tucson (Latitude
+const double LocationDatabase::PI(3.14159265359);
+const double LocationDatabase::EARTH_R(6372817.0); // Radius of Earth for Tucson (Latitude
                                                // = 31.235, 2389ft above Sea Level)
-const double NodeDatabase::METER_TO_FOOT(3.2808399999999888763);
-const double NodeDatabase::METER_TO_MILE(0.00062137121212121);
+const double LocationDatabase::METER_TO_FOOT(3.2808399999999888763);
+const double LocationDatabase::METER_TO_MILE(0.00062137121212121);
 
-NodeDatabase::NodeDatabase() {}
+LocationDatabase::LocationDatabase() {}
 
-NodeDatabase::~NodeDatabase() {}
+LocationDatabase::~LocationDatabase() {}
 
-NodeDatabaseStatus NodeDatabase::read(const char *filename)
+LocationDatabaseStatus LocationDatabase::read(const char *filename)
 {
-  NodeDatabaseStatus retVal(NodeDatabaseStatus::UNKNOWN);
+  LocationDatabaseStatus retVal(LocationDatabaseStatus::UNKNOWN);
 
   std::fstream f;
   f.open(filename, std::fstream::in);
   if (true == f.good())
   {
-    struct NodeDatabaseType n = {0, false, false, false, false, 0, 0};
+    struct LocationDatabaseType n = {0, false, false, false, false, 0, 0};
     unsigned int dest(0);
     unsigned int ctStop(0);
     unsigned int bDepot(0);
@@ -52,15 +52,15 @@ NodeDatabaseStatus NodeDatabase::read(const char *filename)
       std::stringstream ss(line);
 
       // Check if there is bad formatting and report it, no error thrown.
-      if (!(ss >> n.id >> comma)) retVal = NodeDatabaseStatus::NODE_BAD_FORMAT;
-      if (!(ss >> n.latitude >> comma)) retVal = NodeDatabaseStatus::NODE_BAD_FORMAT;
-      if (!(ss >> n.longitude >> comma)) retVal = NodeDatabaseStatus::NODE_BAD_FORMAT;
-      if (!(ss >> dest >> comma)) retVal = NodeDatabaseStatus::NODE_BAD_FORMAT;
-      if (!(ss >> ctStop >> comma)) retVal = NodeDatabaseStatus::NODE_BAD_FORMAT;
-      if (!(ss >> bDepot >> comma)) retVal = NodeDatabaseStatus::NODE_BAD_FORMAT;
-      if (!(ss >> inter >> comma)) retVal = NodeDatabaseStatus::NODE_BAD_FORMAT;
+      if (!(ss >> n.location_id >> comma)) retVal = LocationDatabaseStatus::LOCATION_BAD_FORMAT;
+      if (!(ss >> n.latitude >> comma)) retVal = LocationDatabaseStatus::LOCATION_BAD_FORMAT;
+      if (!(ss >> n.longitude >> comma)) retVal = LocationDatabaseStatus::LOCATION_BAD_FORMAT;
+      if (!(ss >> dest >> comma)) retVal = LocationDatabaseStatus::LOCATION_BAD_FORMAT;
+      if (!(ss >> ctStop >> comma)) retVal = LocationDatabaseStatus::LOCATION_BAD_FORMAT;
+      if (!(ss >> bDepot >> comma)) retVal = LocationDatabaseStatus::LOCATION_BAD_FORMAT;
+      if (!(ss >> inter >> comma)) retVal = LocationDatabaseStatus::LOCATION_BAD_FORMAT;
 
-      if (NodeDatabaseStatus::NODE_BAD_FORMAT == retVal)
+      if (LocationDatabaseStatus::LOCATION_BAD_FORMAT == retVal)
       {
         printf("ERROR: (NodeDatabase::read) Bad format!\n");
       }
@@ -79,18 +79,18 @@ NodeDatabaseStatus NodeDatabase::read(const char *filename)
         ss >> comma;
       }
 
-      db_[n.id] = n;
+      db_[n.location_id] = n;
     }
 
-    if (NodeDatabaseStatus::UNKNOWN == retVal)
+    if (LocationDatabaseStatus::UNKNOWN == retVal)
     {
-      retVal = NodeDatabaseStatus::NODE_OK;
+      retVal = LocationDatabaseStatus::LOCATION_OK;
     }
   }
   else
   {
     printf("ERROR: (NodeDatabase::read) fstream::open failed!\n");
-    return NodeDatabaseStatus::NODE_FILE_OPEN_FAILED;
+    return LocationDatabaseStatus::LOCATION_FILE_OPEN_FAILED;
   }
 
   f.close();
@@ -98,9 +98,9 @@ NodeDatabaseStatus NodeDatabase::read(const char *filename)
   return retVal;
 }
 
-double NodeDatabase::lineOfSight(unsigned int nId1, unsigned int nId2, NodeDatabaseStatus &status)
+double LocationDatabase::lineOfSight(unsigned int nId1, unsigned int nId2, LocationDatabaseStatus &status)
 {
-  NodeDatabaseStatus retVal(NodeDatabaseStatus::UNKNOWN);
+  LocationDatabaseStatus retVal(LocationDatabaseStatus::UNKNOWN);
   double los(0.0);
 
   if ((db_.find(nId1) != db_.end()) && (db_.find(nId2) != db_.end()))
@@ -112,23 +112,23 @@ double NodeDatabase::lineOfSight(unsigned int nId1, unsigned int nId2, NodeDatab
 
     los = acos(sin(lat1) * sin(lat2) + cos(lat1) * cos(lat2) * cos(long2 - long1)) * EARTH_R * METER_TO_MILE;
 
-    retVal = NodeDatabaseStatus::NODE_OK;
+    retVal = LocationDatabaseStatus::LOCATION_OK;
   }
   else
   {
     printf("ERROR: (NodeDatabase::lineOfSight) Node ID not found!\n");
-    retVal = NodeDatabaseStatus::NODE_INVALID_ID;
+    retVal = LocationDatabaseStatus::LOCATION_INVALID_ID;
   }
 
   status = retVal;
   return los;
 }
 
-void NodeDatabase::print()
+void LocationDatabase::print()
 {
-  for (std::map<unsigned int, struct NodeDatabaseType>::iterator it(db_.begin()); it != db_.end(); ++it)
+  for (std::map<unsigned int, struct LocationDatabaseType>::iterator it(db_.begin()); it != db_.end(); ++it)
   {
-    printf("%2u: (%f,%f) ", (it->second).id, (it->second).latitude, (it->second).longitude);
+    printf("%2u: (%f,%f) ", (it->second).location_id, (it->second).latitude, (it->second).longitude);
 
     if (true == (it->second).isDest)
     {

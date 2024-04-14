@@ -14,21 +14,21 @@
 
 #include <map>
 
-enum class NodeDatabaseStatus : unsigned int
+enum class LocationDatabaseStatus : unsigned int
 {
-  NODE_OK,
-  NODE_FILE_OPEN_FAILED,
-  NODE_BAD_FORMAT,
-  NODE_INVALID_ID,
+  LOCATION_OK,
+  LOCATION_FILE_OPEN_FAILED,
+  LOCATION_BAD_FORMAT,
+  LOCATION_INVALID_ID,
   UNKNOWN
 };
 
-class NodeDatabase
+class LocationDatabase
 {
 public:
-  struct NodeDatabaseType
+  struct LocationDatabaseType
   {
-    unsigned int id;
+    unsigned int location_id;
     double latitude;
     double longitude;
     bool isDest;
@@ -39,16 +39,16 @@ public:
     unsigned int neighbor[10];
   };
 
-  NodeDatabase();
-  ~NodeDatabase();
+  LocationDatabase();
+  ~LocationDatabase();
 
-  NodeDatabaseStatus read(const char *filename);
+  LocationDatabaseStatus read(const char *filename);
 
-  double lineOfSight(unsigned int nId1, unsigned int nId2, NodeDatabaseStatus &status);
+  double lineOfSight(unsigned int nId1, unsigned int nId2, LocationDatabaseStatus &status);
 
   void print();
 
-  std::map<unsigned int, struct NodeDatabaseType> db_;
+  std::map<unsigned int, struct LocationDatabaseType> db_;
 
 private:
   static const double PI;
