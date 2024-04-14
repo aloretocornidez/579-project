@@ -51,8 +51,8 @@ public:
     Location *children[MAX_CHILDREN];
   } Location;
 
-  AStar(EdgeDatabase &eDb, NodeDatabase &nDb, Traveller &traveller);
-  AStar(EdgeDatabase &eDb, NodeDatabase &nDb);
+  AStar(PathDatabase &eDb, NodeDatabase &nDb, Traveller &traveller);
+  AStar(PathDatabase &eDb, NodeDatabase &nDb);
   ~AStar();
 
   AStarStatus solve(unsigned int startId, unsigned int goalId);
@@ -78,7 +78,7 @@ private:
   void reconstructPath(Location *n);
 
   // Pathways (Edges)
-  EdgeDatabase &path_;
+  PathDatabase &path_;
   // Locations (Nodes)
   NodeDatabase &loc_;
 

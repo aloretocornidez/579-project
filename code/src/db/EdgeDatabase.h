@@ -14,19 +14,19 @@
 
 #include <map>
 
-enum class EdgeDatabaseStatus : unsigned int
+enum class PathDatabaseStatus : unsigned int
 {
-  EDGE_OK,
-  EDGE_FILE_OPEN_FAILED,
-  EDGE_BAD_FORMAT,
-  EDGE_INVALID_MODE,
+  PATH_OK,
+  PATH_FILE_OPEN_FAILED,
+  PATH_BAD_FORMAT,
+  PATH_INVALID_MODE,
   UNKNOWN
 };
 
-class EdgeDatabase
+class PathDatabase
 {
 public:
-  enum class EdgeDatabaseMode : unsigned int
+  enum class PathDatabaseMode : unsigned int
   {
     UNAVAILABLE,
     WALK,
@@ -35,28 +35,29 @@ public:
     UNKNOWN
   };
 
-  struct EdgeDatabaseType
+  struct PathDatabaseType
   {
+    unsigned int path_id;
     unsigned int src;
     unsigned int dest;
     double dist_mile;
     double straight_mile;
-    EdgeDatabaseMode mode;
+    PathDatabaseMode mode;
   };
 
-  EdgeDatabase();
-  ~EdgeDatabase();
+  PathDatabase();
+  ~PathDatabase();
 
   // Reads the data from the CSV file and populates the data into the database
   // map.
-  EdgeDatabaseStatus read(const char *filename);
+  PathDatabaseStatus read(const char *filename);
 
   void print();
 
   // The database is stored in a map using the.
   // source node ID and Destination node ID as keys.
   // The edge parameters as the key value.
-  std::map<std::pair<unsigned int, unsigned int>, struct EdgeDatabaseType> db_;
+  std::map<std::pair<unsigned int, unsigned int>, struct PathDatabaseType> db_;
 
 private:
   static const double FT_IN_MILE;

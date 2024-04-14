@@ -15,8 +15,8 @@
 
 int main()
 {
-  EdgeDatabase edb;
-  edb.read("../data/edge.csv");
+  PathDatabase edb;
+  edb.read("../data/paths.csv");
   // edb.print();
 
   NodeDatabase ndb;

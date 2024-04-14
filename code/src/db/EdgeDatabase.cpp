@@ -11,26 +11,27 @@
 
 #include <cstdio>
 #include <fstream>
+#include <iostream>
 #include <sstream>
 #include <string>
 
 #include "EdgeDatabase.h"
 
-const double EdgeDatabase::FT_IN_MILE(5280.0);
+const double PathDatabase::FT_IN_MILE(5280.0);
 
-EdgeDatabase::EdgeDatabase() {}
+PathDatabase::PathDatabase() {}
 
-EdgeDatabase::~EdgeDatabase() {}
+PathDatabase::~PathDatabase() {}
 
-EdgeDatabaseStatus EdgeDatabase::read(const char *filename)
+PathDatabaseStatus PathDatabase::read(const char *filename)
 {
-  EdgeDatabaseStatus retVal(EdgeDatabaseStatus::UNKNOWN);
+  PathDatabaseStatus retVal(PathDatabaseStatus::UNKNOWN);
 
   std::fstream f;
   f.open(filename, std::fstream::in);
   if (true == f.good())
   {
-    struct EdgeDatabaseType e = {0, 0, 0.0, 0.0, EdgeDatabaseMode::UNKNOWN};
+    struct PathDatabaseType e = {0, 0, 0, 0.0, 0.0, PathDatabaseMode::UNKNOWN};
     unsigned int dist_ft(0);
     unsigned int straight_ft(0);
     unsigned int mode(0);
@@ -43,13 +44,14 @@ EdgeDatabaseStatus EdgeDatabase::read(const char *filename)
 
       std::stringstream ss(line);
 
-      if (!(ss >> e.src >> comma)) retVal = EdgeDatabaseStatus::EDGE_BAD_FORMAT;
-      if (!(ss >> e.dest >> comma)) retVal = EdgeDatabaseStatus::EDGE_BAD_FORMAT;
-      if (!(ss >> dist_ft >> comma)) retVal = EdgeDatabaseStatus::EDGE_BAD_FORMAT;
-      if (!(ss >> straight_ft >> comma)) retVal = EdgeDatabaseStatus::EDGE_BAD_FORMAT;
-      if (!(ss >> mode)) retVal = EdgeDatabaseStatus::EDGE_BAD_FORMAT;
+      if (!(ss >> e.path_id >> comma)) retVal = PathDatabaseStatus::PATH_BAD_FORMAT;
+      if (!(ss >> e.src >> comma)) retVal = PathDatabaseStatus::PATH_BAD_FORMAT;
+      if (!(ss >> e.dest >> comma)) retVal = PathDatabaseStatus::PATH_BAD_FORMAT;
+      if (!(ss >> dist_ft >> comma)) retVal = PathDatabaseStatus::PATH_BAD_FORMAT;
+      if (!(ss >> straight_ft >> comma)) retVal = PathDatabaseStatus::PATH_BAD_FORMAT;
+      if (!(ss >> mode)) retVal = PathDatabaseStatus::PATH_BAD_FORMAT;
 
-      if (EdgeDatabaseStatus::EDGE_BAD_FORMAT == retVal)
+      if (PathDatabaseStatus::PATH_BAD_FORMAT == retVal)
       {
         printf("ERROR: (EdgeDatabase::read) Bad format!\n");
       }
@@ -60,32 +62,33 @@ EdgeDatabaseStatus EdgeDatabase::read(const char *filename)
       switch (mode)
       {
       case 1:
-        e.mode = EdgeDatabaseMode::WALK;
+        e.mode = PathDatabaseMode::WALK;
         break;
       case 2:
-        e.mode = EdgeDatabaseMode::WALK_BIKE;
+        e.mode = PathDatabaseMode::WALK_BIKE;
         break;
       case 3:
-        e.mode = EdgeDatabaseMode::WALK_BIKE_CATTRAN;
+        e.mode = PathDatabaseMode::WALK_BIKE_CATTRAN;
         break;
       default:
-        e.mode = EdgeDatabaseMode::UNKNOWN;
-        retVal = EdgeDatabaseStatus::EDGE_INVALID_MODE;
+        e.mode = PathDatabaseMode::UNKNOWN;
+        retVal = PathDatabaseStatus::PATH_INVALID_MODE;
         printf("ERROR: (EdgeDatabase::read) Bad mode!\n");
+        std::cout << line << std::endl;
       }
 
       db_[std::make_pair(e.src, e.dest)] = e;
     }
 
-    if (EdgeDatabaseStatus::UNKNOWN == retVal)
+    if (PathDatabaseStatus::UNKNOWN == retVal)
     {
-      retVal = EdgeDatabaseStatus::EDGE_OK;
+      retVal = PathDatabaseStatus::PATH_OK;
     }
   }
   else
   {
-    printf("ERROR: (EdgeDatabase::read) fstream::open failed!\n");
-    return EdgeDatabaseStatus::EDGE_FILE_OPEN_FAILED;
+    printf("ERROR: (PathDatabase::read) fstream::open failed!\n");
+    return PathDatabaseStatus::PATH_FILE_OPEN_FAILED;
   }
 
   f.close();
@@ -93,27 +96,27 @@ EdgeDatabaseStatus EdgeDatabase::read(const char *filename)
   return retVal;
 }
 
-void EdgeDatabase::print()
+void PathDatabase::print()
 {
-  for (std::map<std::pair<unsigned int, unsigned int>, struct EdgeDatabaseType>::iterator it(db_.begin()); it != db_.end(); ++it)
+  for (std::map<std::pair<unsigned int, unsigned int>, struct PathDatabaseType>::iterator it(db_.begin()); it != db_.end(); ++it)
   {
-    printf("%2u -> %2u, dist = %f, straight = %f, mode = ", (it->second).src, (it->second).dest, (it->second).dist_mile, (it->second).straight_mile);
+    printf("path_id = %2i %2u -> %2u, dist = %f, straight = %f, mode = ", (it->second).path_id, (it->second).src, (it->second).dest, (it->second).dist_mile, (it->second).straight_mile);
 
     switch ((it->second).mode)
     {
-    case EdgeDatabaseMode::UNAVAILABLE:
+    case PathDatabaseMode::UNAVAILABLE:
       printf("UNAVAILABLE\n");
       break;
-    case EdgeDatabaseMode::WALK:
+    case PathDatabaseMode::WALK:
       printf("WALK\n");
       break;
-    case EdgeDatabaseMode::WALK_BIKE:
+    case PathDatabaseMode::WALK_BIKE:
       printf("WALK_BIKE\n");
       break;
-    case EdgeDatabaseMode::WALK_BIKE_CATTRAN:
+    case PathDatabaseMode::WALK_BIKE_CATTRAN:
       printf("WALK_BIKE_CATTRAN\n");
       break;
-    case EdgeDatabaseMode::UNKNOWN:
+    case PathDatabaseMode::UNKNOWN:
     default:
       printf("UNKNOWN\n");
     }

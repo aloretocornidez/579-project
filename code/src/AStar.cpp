@@ -15,9 +15,9 @@
 #include <stdexcept>
 #include <stdio.h>
 
-AStar::AStar(EdgeDatabase &eDb, NodeDatabase &nDb, Traveller &traveller) : path_(eDb), loc_(nDb), startId_(0), goalId_(0), goal_(nullptr), traveller_(traveller) {}
+AStar::AStar(PathDatabase &eDb, NodeDatabase &nDb, Traveller &traveller) : path_(eDb), loc_(nDb), startId_(0), goalId_(0), goal_(nullptr), traveller_(traveller) {}
 
-AStar::AStar(EdgeDatabase &eDb, NodeDatabase &nDb) : path_(eDb), loc_(nDb), startId_(0), goalId_(0), goal_(nullptr) {}
+AStar::AStar(PathDatabase &eDb, NodeDatabase &nDb) : path_(eDb), loc_(nDb), startId_(0), goalId_(0), goal_(nullptr) {}
 
 AStar::~AStar() {}
 
@@ -256,7 +256,7 @@ AStarStatus AStar::findChildren(Location *n)
         id2 = (n->id < c->id) ? c->id : n->id;
 
         // std::map::at throws out_of_range exception
-        struct EdgeDatabase::EdgeDatabaseType &eData = path_.db_.at(std::make_pair(id1, id2));
+        struct PathDatabase::PathDatabaseType &eData = path_.db_.at(std::make_pair(id1, id2));
 
         c->g = n->g + eData.dist_mile;
         c->h = heuristic(c->id);
@@ -346,7 +346,7 @@ void AStar::reconstructPath(Location *n)
   unsigned int order(1);
   for (std::list<Location *>::iterator it(solution_.begin()); it != solution_.end(); ++it)
   {
-    printf("  %2d:  %d  (%f)\n", order, (*it)->id, (*it)->g);
+    // printf("  %2d:  %d  (%f)\n", order, (*it)->id, (*it)->g);
     ++order;
   }
 }
