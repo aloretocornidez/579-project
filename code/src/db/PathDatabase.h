@@ -9,8 +9,8 @@
 //     Ted Ha (ttha)
 //
 
-#ifndef EDGE_DATABASE_H
-#define EDGE_DATABASE_H
+#ifndef PATH_DATABASE_H
+#define PATH_DATABASE_H
 
 #include <map>
 
@@ -63,4 +63,4 @@ private:
   static const double FT_IN_MILE;
 };
 
-#endif /* EDGE_DATABASE_H */
+#endif /* PATH_DATABASE_H */

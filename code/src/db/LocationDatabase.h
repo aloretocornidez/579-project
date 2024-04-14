@@ -9,8 +9,8 @@
 //     Ted Ha (ttha)
 //
 
-#ifndef NODE_DATABASE_H
-#define NODE_DATABASE_H
+#ifndef LOCATION_DATABASE_H
+#define LOCATION_DATABASE_H
 
 #include <map>
 
@@ -26,7 +26,8 @@ enum class LocationDatabaseStatus : unsigned int
 class LocationDatabase
 {
 public:
-  struct LocationDatabaseType
+
+  struct Location
   {
     unsigned int location_id;
     double latitude;
@@ -48,7 +49,7 @@ public:
 
   void print();
 
-  std::map<unsigned int, struct LocationDatabaseType> db_;
+  std::map<unsigned int, struct Location> db_;
 
 private:
   static const double PI;
@@ -57,4 +58,4 @@ private:
   static const double METER_TO_MILE;
 };
 
-#endif /* NODE_DATABASE_H */
+#endif /* LOCATION_DATABASE_H */

@@ -12,6 +12,7 @@
 #ifndef A_STAR_H
 #define A_STAR_H
 
+#include <algorithm>
 #include <list>
 
 #include "./db/LocationDatabase.h"
@@ -26,6 +27,15 @@ enum class AStarStatus : unsigned int
   UNKNOWN
 };
 
+// Used to calculate new cost of nodes.
+enum class ArrivalMethod : unsigned int
+{
+  WALKED,
+  BIKED,
+  CAT_TRANNED,
+  UNKNOWN
+};
+
 class AStar
 {
 public:
@@ -33,25 +43,28 @@ public:
 
   // TODO: Add an implementation for a traveler (this will keep track of
   // available options for the A-Star algorithm to find a solution path.)
-  typedef struct Traveller
-  {
-    bool canWalk;
-    bool canBike;
-    bool canCatTran;
-  } Traveller;
 
-  typedef struct Location
+  typedef struct Node_s
   {
-    unsigned int id;
+    // Used to identify the node in the search tree.
+    unsigned int node_id;
+    // Used to id the physical location that the node pertains to.
+    unsigned int location_id;
+
+    // Heuristic information.
     double f;
     double g;
     double h;
-    unsigned int numDestinations;
-    Location *parent;
-    Location *children[MAX_CHILDREN];
-  } Location;
 
-  AStar(PathDatabase &eDb, LocationDatabase &nDb, Traveller &traveller);
+    // Transportation methods available.
+    ArrivalMethod arrivalMethod;
+
+    // unsigned int numDestinations;
+    Node_s *parent;
+    Node_s *children[MAX_CHILDREN];
+
+  } Node;
+
   AStar(PathDatabase &eDb, LocationDatabase &nDb);
   ~AStar();
 
@@ -63,19 +76,19 @@ private:
 
   AStarStatus run();
 
-  Location *createNode(unsigned int id, AStarStatus &status);
+  Node *createNode(unsigned int id, AStarStatus &status);
 
   double heuristic(unsigned int id);
 
-  AStarStatus findChildren(Location *n);
+  AStarStatus findChildren(Node *n);
 
-  bool isOpen(Location *n);
-  bool isClosed(Location *n);
+  bool isOpen(Node *n);
+  bool isClosed(Node *n);
 
-  void addToOpen(Location *n);
-  void updateOpen(Location *n);
+  void addToOpen(Node *n);
+  void updateOpen(Node *n);
 
-  void reconstructPath(Location *n);
+  void reconstructPath(Node *n);
 
   // Pathways (Edges)
   PathDatabase &path_;
@@ -83,15 +96,15 @@ private:
   LocationDatabase &loc_;
 
   // Open queue.
-  std::list<Location *> open_;
+  std::list<Node *> open_;
   // Closed queue.
-  std::list<Location *> closed_;
+  std::list<Node *> closed_;
 
   // Solution path.
-  std::list<Location *> solution_;
+  std::list<Node *> solution_;
 
   // Keep track of all allocated memory.
-  std::list<Location *> nodeList_;
+  std::list<Node *> nodeList_;
 
   // Start nodes
   unsigned int startId_;
@@ -99,9 +112,11 @@ private:
   unsigned int goalId_;
 
   // Pointer to the goal node
-  Location *goal_;
+  Node *goal_;
 
-  Traveller traveller_;
+  unsigned int node_id_counter;
+
+  ArrivalMethod traveller_;
 };
 
 #endif /* A_STAR_H */

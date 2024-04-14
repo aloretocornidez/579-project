@@ -20,7 +20,7 @@
 
 const double LocationDatabase::PI(3.14159265359);
 const double LocationDatabase::EARTH_R(6372817.0); // Radius of Earth for Tucson (Latitude
-                                               // = 31.235, 2389ft above Sea Level)
+                                                   // = 31.235, 2389ft above Sea Level)
 const double LocationDatabase::METER_TO_FOOT(3.2808399999999888763);
 const double LocationDatabase::METER_TO_MILE(0.00062137121212121);
 
@@ -36,7 +36,7 @@ LocationDatabaseStatus LocationDatabase::read(const char *filename)
   f.open(filename, std::fstream::in);
   if (true == f.good())
   {
-    struct LocationDatabaseType n = {0, false, false, false, false, 0, 0};
+    struct Location n = {0, false, false, false, false, 0, 0};
     unsigned int dest(0);
     unsigned int catTranStop(0);
     unsigned int bikeDepot(0);
@@ -126,7 +126,7 @@ double LocationDatabase::lineOfSight(unsigned int nId1, unsigned int nId2, Locat
 
 void LocationDatabase::print()
 {
-  for (std::map<unsigned int, struct LocationDatabaseType>::iterator it(db_.begin()); it != db_.end(); ++it)
+  for (std::map<unsigned int, struct Location>::iterator it(db_.begin()); it != db_.end(); ++it)
   {
     printf("%2u: (%f,%f) ", (it->second).location_id, (it->second).latitude, (it->second).longitude);
 
