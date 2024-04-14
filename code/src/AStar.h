@@ -14,8 +14,8 @@
 
 #include <list>
 
-#include "./db/EdgeDatabase.h"
-#include "./db/NodeDatabase.h"
+#include "./db/LocationDatabase.h"
+#include "./db/PathDatabase.h"
 
 enum class AStarStatus : unsigned int
 {

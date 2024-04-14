@@ -16,7 +16,7 @@
 #include <sstream>
 #include <string>
 
-#include "NodeDatabase.h"
+#include "LocationDatabase.h"
 
 const double LocationDatabase::PI(3.14159265359);
 const double LocationDatabase::EARTH_R(6372817.0); // Radius of Earth for Tucson (Latitude
@@ -38,16 +38,16 @@ LocationDatabaseStatus LocationDatabase::read(const char *filename)
   {
     struct LocationDatabaseType n = {0, false, false, false, false, 0, 0};
     unsigned int dest(0);
-    unsigned int ctStop(0);
-    unsigned int bDepot(0);
-    unsigned int inter(0);
+    unsigned int catTranStop(0);
+    unsigned int bikeDepot(0);
+    unsigned int intersection(0);
     unsigned int neighbor(0);
     char comma;
 
     std::string line;
     while (std::getline(f, line))
     {
-      // printf("%s\n", line.c_str());
+      printf("%s\n", line.c_str());
 
       std::stringstream ss(line);
 
@@ -56,9 +56,9 @@ LocationDatabaseStatus LocationDatabase::read(const char *filename)
       if (!(ss >> n.latitude >> comma)) retVal = LocationDatabaseStatus::LOCATION_BAD_FORMAT;
       if (!(ss >> n.longitude >> comma)) retVal = LocationDatabaseStatus::LOCATION_BAD_FORMAT;
       if (!(ss >> dest >> comma)) retVal = LocationDatabaseStatus::LOCATION_BAD_FORMAT;
-      if (!(ss >> ctStop >> comma)) retVal = LocationDatabaseStatus::LOCATION_BAD_FORMAT;
-      if (!(ss >> bDepot >> comma)) retVal = LocationDatabaseStatus::LOCATION_BAD_FORMAT;
-      if (!(ss >> inter >> comma)) retVal = LocationDatabaseStatus::LOCATION_BAD_FORMAT;
+      if (!(ss >> catTranStop >> comma)) retVal = LocationDatabaseStatus::LOCATION_BAD_FORMAT;
+      if (!(ss >> bikeDepot >> comma)) retVal = LocationDatabaseStatus::LOCATION_BAD_FORMAT;
+      if (!(ss >> intersection >> comma)) retVal = LocationDatabaseStatus::LOCATION_BAD_FORMAT;
 
       if (LocationDatabaseStatus::LOCATION_BAD_FORMAT == retVal)
       {
@@ -66,16 +66,16 @@ LocationDatabaseStatus LocationDatabase::read(const char *filename)
       }
 
       n.isDest = (dest == 1);
-      n.isCatTranStop = (ctStop == 1);
-      n.isBikeDepot = (bDepot == 1);
-      n.isIntersection = (inter == 1);
+      n.isCatTranStop = (catTranStop == 1);
+      n.isBikeDepot = (bikeDepot == 1);
+      n.isIntersection = (intersection == 1);
 
-      n.numNeighbors = 0;
-      memset(n.neighbor, 0, sizeof(n.neighbor));
+      n.num_outbound_paths = 0;
+      memset(n.outbound_paths, 0, sizeof(n.outbound_paths));
       while (ss >> neighbor)
       {
-        n.neighbor[n.numNeighbors] = neighbor;
-        ++n.numNeighbors;
+        n.outbound_paths[n.num_outbound_paths] = neighbor;
+        ++n.num_outbound_paths;
         ss >> comma;
       }
 
@@ -89,7 +89,7 @@ LocationDatabaseStatus LocationDatabase::read(const char *filename)
   }
   else
   {
-    printf("ERROR: (NodeDatabase::read) fstream::open failed!\n");
+    printf("ERROR: (LoactionDatabase::read) fstream::open failed!\n");
     return LocationDatabaseStatus::LOCATION_FILE_OPEN_FAILED;
   }
 
@@ -150,17 +150,17 @@ void LocationDatabase::print()
       printf("Intersecton ");
     }
 
-    printf("- (%d) ", (it->second).numNeighbors);
+    printf("- (%d) ", (it->second).num_outbound_paths);
 
-    for (unsigned int i(0); i < (it->second).numNeighbors; ++i)
+    for (unsigned int i(0); i < (it->second).num_outbound_paths; ++i)
     {
       if (0 == i)
       {
-        printf("%u", (it->second).neighbor[i]);
+        printf("%u", (it->second).outbound_paths[i]);
       }
       else
       {
-        printf(",%u", (it->second).neighbor[i]);
+        printf(",%u", (it->second).outbound_paths[i]);
       }
     }
     printf("\n");

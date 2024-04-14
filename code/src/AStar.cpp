@@ -11,7 +11,9 @@
 
 #include "AStar.h"
 #include <cstring>
+#include <iostream>
 #include <limits>
+#include <ostream>
 #include <stdexcept>
 #include <stdio.h>
 
@@ -28,6 +30,7 @@ AStarStatus AStar::solve(unsigned int startId, unsigned int goalId)
   goalId_ = goalId;
 
   // auto start{ std::chrono::high_resolution_clock::now() };
+  
 
   retVal = initialize();
   if (AStarStatus::ASTAR_OK == retVal)
@@ -238,13 +241,13 @@ AStarStatus AStar::findChildren(Location *n)
   unsigned int id2(0);
 
   // Get the possible number of children for the current node.
-  n->numDestinations = nData.numNeighbors;
+  n->numDestinations = nData.num_outbound_paths;
 
   //
-  for (unsigned int i(0); i < nData.numNeighbors; ++i)
+  for (unsigned int i(0); i < nData.num_outbound_paths; ++i)
   {
     // // Creates a node from the possible children.
-    Location *c = createNode(nData.neighbor[i], retVal);
+    Location *c = createNode(nData.outbound_paths[i], retVal);
 
     // If the node is created successfully.
     if (AStarStatus::ASTAR_OK == retVal)

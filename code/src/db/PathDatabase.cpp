@@ -15,7 +15,7 @@
 #include <sstream>
 #include <string>
 
-#include "EdgeDatabase.h"
+#include "PathDatabase.h"
 
 const double PathDatabase::FT_IN_MILE(5280.0);
 

@@ -35,8 +35,8 @@ public:
     bool isCatTranStop;
     bool isBikeDepot;
     bool isIntersection;
-    unsigned int numNeighbors;
-    unsigned int neighbor[10];
+    unsigned int num_outbound_paths;
+    unsigned int outbound_paths[10];
   };
 
   LocationDatabase();
