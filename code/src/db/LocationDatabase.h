@@ -26,7 +26,6 @@ enum class LocationDatabaseStatus : unsigned int
 class LocationDatabase
 {
 public:
-
   struct Location
   {
     unsigned int location_id;

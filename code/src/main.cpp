@@ -9,8 +9,8 @@
 //     Ted Ha (ttha)
 //
 
-#include "./db/PathDatabase.h"
 #include "./db/LocationDatabase.h"
+#include "./db/PathDatabase.h"
 #include "AStar.h"
 
 int main()

@@ -10,6 +10,8 @@
 //
 
 #include "AStar.h"
+#include "db/LocationDatabase.h"
+#include "db/PathDatabase.h"
 #include <cstring>
 #include <limits>
 #include <stdexcept>
@@ -101,7 +103,8 @@ AStarStatus AStar::run()
   while ((false == foundGoal) && (false == open_.empty()))
   {
     // 1. Find the lowest f in the open list, place it in the closed list
-    currNode = open_.front();  //TO DO: Where is the open queue being sorted?
+    currNode = open_.front(); // TO DO: Where is the open
+                              // queue being sorted?
     open_.pop_front();
 
     closed_.push_back(currNode);
@@ -120,7 +123,8 @@ AStarStatus AStar::run()
     // 3. For each child
     // TO DO: Refactor this based on output of updated findChildren() method
     Node *child(nullptr);
-    for (unsigned int i(0); i < (currNode->numDestinations); ++i)
+    for (unsigned int i(0); i < (0); ++i)
+    // for (unsigned int i(0); i < (currNode->numDestinations); ++i)
     {
       child = currNode->children[i];
 
@@ -131,7 +135,8 @@ AStarStatus AStar::run()
       }
 
       // 3b. If a goal node, end search
-      if (goalId_ == child->location_id)  //Huh? Don't think this check should be here.
+      if (goalId_ == child->location_id) // Huh? Don't think this
+                                         // check should be here.
       {
         foundGoal = true;
         goal_ = child;
@@ -187,7 +192,7 @@ AStar::Node *AStar::createNode(unsigned int id, AStarStatus &status)
   // TODO: Make sure to take into account, the ID of the location being
   // separate from the node ID in the search tree of the algorithm.
 
-  // If the id is not the end of the database, proceed.
+  // If the id is found (find returns end.)
   if (loc_.db_.find(id) != loc_.db_.end())
   {
     // Create a new node.
@@ -198,6 +203,7 @@ AStar::Node *AStar::createNode(unsigned int id, AStarStatus &status)
 
     // Update the location_id of the created node.
     n->location_id = loc_.db_[id].location_id;
+
     // Update the ID of the created node.
     n->node_id = node_id_counter++;
 
@@ -208,7 +214,7 @@ AStar::Node *AStar::createNode(unsigned int id, AStarStatus &status)
 
     // Initialize a 0 value for the parent.
     n->parent = 0;
-    
+
     // Initializing unknown arrival method.
     n->arrivalMethod = ArrivalMethod::UNKNOWN;
 
@@ -251,6 +257,7 @@ AStarStatus AStar::findChildren(Node *n)
   //
   for (unsigned int i(0); i < nData.num_outbound_paths; ++i)
   {
+    // Create the node for each new path.
     Node *c = createNode(nData.outbound_paths[i], retVal);
 
     // If the node is created successfully.
@@ -258,14 +265,97 @@ AStarStatus AStar::findChildren(Node *n)
     {
       try
       {
+
         // Edge DB map key ID pair needs to have smaller ID first
         id1 = (n->node_id < c->node_id) ? n->node_id : c->node_id;
         id2 = (n->node_id < c->node_id) ? c->node_id : n->node_id;
 
         // std::map::at throws out_of_range exception
-        struct PathDatabase::PathDatabaseType &eData = path_.db_.at(std::make_pair(id1, id2));
+        struct PathDatabase::PathDatabaseType &pathData = path_.db_.at(std::make_pair(id1, id2));
+        LocationDatabase::Location newLocation = loc_.db_[c->location_id];
 
-        c->g = n->g + eData.dist_mile;
+        // Check if the path supports walking.
+        if (pathData.mode == PathDatabase::PathDatabaseMode::WALK)
+        {
+          // Check if the arrival method was walking
+          if (n->arrivalMethod == ArrivalMethod::WALKED)
+          {
+          }
+          else if (n->arrivalMethod == ArrivalMethod::BIKED)
+          {
+            // check if new location is location is bike depot.
+            if (newLocation.isBikeDepot)
+            {
+            }
+          }
+          else if (n->arrivalMethod == ArrivalMethod::CAT_TRANNED)
+          {
+            // Check if location is cat tran stop.
+            if (newLocation.isCatTranStop)
+            {
+            }
+          }
+        }
+        // Check if the path supports biking
+        if (pathData.mode == PathDatabase::PathDatabaseMode::WALK_BIKE)
+        {
+
+          // Check if the arrival method was walking
+          if (n->arrivalMethod == ArrivalMethod::WALKED)
+          {
+            // create new node with location_id =
+            // pathDestinationLocation and arrivalMethod = walking
+            // calculate the cost using path.dist_mile and speed of
+            // walking append to children
+          }
+          else if (n->arrivalMethod == ArrivalMethod::BIKED)
+          {
+            // check if new location is location is bike depot.
+            if (newLocation.isBikeDepot)
+            {
+              // create new node with location_id =
+              // pathDestinationLocation and arrivalMethod =
+              // walking calculate the cost using path.dist_mile
+              // and speed of walking append to children
+            }
+          }
+          else if (n->arrivalMethod == ArrivalMethod::CAT_TRANNED)
+          {
+            // Check if location is cat tran stop.
+            if (newLocation.isCatTranStop)
+            {
+              // create new node with location_id =
+              // pathDestinationLocation and arrivalMethod =
+              // walking calculate the cost using path.dist_mile
+              // and speed of walking append to children
+            }
+          }
+        }
+        // Check if the path supports the cat tran.
+        if (pathData.mode == PathDatabase::PathDatabaseMode::WALK_BIKE_CATTRAN)
+        {
+
+          // Check if the arrival method was walking
+          if (n->arrivalMethod == ArrivalMethod::WALKED)
+          {
+          }
+          else if (n->arrivalMethod == ArrivalMethod::BIKED)
+          {
+            // check if new location is location is bike depot.
+            if (newLocation.isBikeDepot)
+            {
+            }
+          }
+          else if (n->arrivalMethod == ArrivalMethod::CAT_TRANNED)
+          {
+            // Check if location is cat tran stop.
+            if (newLocation.isCatTranStop)
+            {
+            }
+          }
+        }
+
+        c->g = n->g + pathData.dist_mile;
         c->h = heuristic(c->node_id);
         c->f = c->g + c->h;
 
@@ -278,7 +368,7 @@ AStarStatus AStar::findChildren(Node *n)
       catch (const std::out_of_range &oor)
       {
         (void)oor;
-        printf("ERROR: (AStar::findChildren) Edge does not exist!");
+        printf("ERROR: (AStar::findChildren) Edge does not exist!\n");
       }
     }
   }
@@ -286,7 +376,8 @@ AStarStatus AStar::findChildren(Node *n)
   return retVal;
 }
 
-//TO DO: it will be necessary to check ALL node properties except node_id to detect equivalence
+// TO DO: it will be necessary to check ALL node properties except node_id to
+// detect equivalence
 bool AStar::isOpen(Node *n)
 {
   for (std::list<Node *>::iterator it(open_.begin()); it != open_.end(); ++it)
@@ -300,7 +391,8 @@ bool AStar::isOpen(Node *n)
   return false;
 }
 
-//TO DO: it will be necessary to check ALL node properties except node_id to detect equivalence
+// TO DO: it will be necessary to check ALL node properties except node_id to
+// detect equivalence
 bool AStar::isClosed(Node *n)
 {
   for (std::list<Node *>::iterator it(closed_.begin()); it != closed_.end(); ++it)
@@ -322,7 +414,8 @@ void AStar::addToOpen(Node *n)
   open_.sort(compare_node);
 }
 
-//TO DO: it will be necessary to check ALL node properties except node_id to detect equivalence
+// TO DO: it will be necessary to check ALL node properties except node_id to
+// detect equivalence
 void AStar::updateOpen(Node *n)
 {
   for (std::list<Node *>::iterator it(open_.begin()); it != open_.end(); ++it)

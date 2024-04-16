@@ -46,7 +46,7 @@ public:
   typedef struct Node_s
   {
     // Used to identify the node in the search tree.
-    unsigned int node_id;  // TO DO: I think this may be unneccessary, we detect equivalence by comparing other node properties
+    unsigned int node_id;  // TO DO: I think this may be unnecessary, we detect equivalence by comparing other node properties
     // Used to id the physical location that the node pertains to.
     unsigned int location_id;
 
