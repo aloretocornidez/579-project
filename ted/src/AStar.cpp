@@ -15,11 +15,16 @@
 
 #include "AStar.h"
 
-AStar::AStar(EdgeDatabase & eDb, NodeDatabase & nDb)
-    : path_(eDb)
-    , loc_(nDb)
+namespace astar
+{
+
+AStar::AStar(graph::Graph & g)
+    : graph_(g)
     , startId_(0)
     , goalId_(0)
+    , costType_(CostType::UNKNOWN)
+    , hr_(0)
+    , min_(0.0)
     , goal_(nullptr)
 {
 }
@@ -28,11 +33,14 @@ AStar::~AStar()
 {
 }
 
-AStarStatus AStar::solve(unsigned int startId, unsigned int goalId)
+AStarStatus AStar::solve(unsigned int startId, unsigned int goalId, CostType costType, unsigned int hr, double min)
 {
     AStarStatus retVal(AStarStatus::UNKNOWN);
     startId_ = startId;
     goalId_ = goalId;
+    costType_ = costType;
+    hr_ = hr;
+    min_ = min;
 
     //auto start{ std::chrono::high_resolution_clock::now() };
 
@@ -56,13 +64,18 @@ AStarStatus AStar::initialize()
 {
     AStarStatus retVal(AStarStatus::UNKNOWN);
 
-    if (open_.empty() && closed_.empty() && nodeList_.empty())
+    if ((true == open_.empty()) && 
+        (true == closed_.empty()) && 
+        (true == nodeList_.empty()))
     {
-        struct Node * n = createNode(startId_, retVal);
+        struct AStarNode * n = createNode(startId_, TransportMode::NONE, retVal);
         if ((AStarStatus::ASTAR_OK == retVal) && (nullptr != n))
         {
+            n->hr = hr_;
+            n->min = min_;
+
             n->g = 0;
-            n->h = heuritic(n->id);
+            n->h = heuritic((n->gNode)->id());
             n->f = n->g + n->h;
 
             open_.push_back(n);
@@ -79,7 +92,7 @@ AStarStatus AStar::initialize()
 
 void AStar::finalize()
 {
-    for (std::list<struct Node *>::iterator it(nodeList_.begin());
+    for (std::list<struct AStarNode *>::iterator it(nodeList_.begin());
          it != nodeList_.end(); ++it)
     {
         if (*it != 0)
@@ -101,7 +114,7 @@ AStarStatus AStar::run()
 {
     AStarStatus retVal(AStarStatus::UNKNOWN);
 
-    struct Node * currNode(0);
+    struct AStarNode * currNode(0);
     bool foundGoal(false);
 
     while ((false == foundGoal) && (false == open_.empty()))
@@ -114,7 +127,7 @@ AStarStatus AStar::run()
         closed_.push_back(currNode);
 
         // 1a. If the current node is a goal node, end search
-        if (goalId_ == currNode->id)
+        if (goalId_ == (currNode->gNode)->id())
         {
             foundGoal = true;
             goal_ = currNode;
@@ -127,7 +140,7 @@ AStarStatus AStar::run()
 
         //
         // 3. For each child
-        struct Node * child(nullptr);
+        struct AStarNode * child(nullptr);
         for (unsigned int i(0); i < (currNode->numChildren); ++i)
         {
             child = currNode->children[i];
@@ -139,7 +152,7 @@ AStarStatus AStar::run()
             }
             
             // 3b. If a goal node, end search
-            if (goalId_ == child->id)
+            if (goalId_ == (child->gNode)->id())
             {
                 foundGoal = true;
                 goal_ = child;
@@ -165,7 +178,6 @@ AStarStatus AStar::run()
     {
         if (nullptr != goal_)
         {
-
             reconstructPath(goal_);
             retVal = AStarStatus::ASTAR_OK;
         }
@@ -184,28 +196,45 @@ AStarStatus AStar::run()
     return retVal;
 }
 
-struct AStar::Node * AStar::createNode(unsigned int id, AStarStatus & status)
+struct AStar::AStarNode * AStar::createNode(unsigned int id, TransportMode mode, AStarStatus & status)
 {
-    status = AStarStatus::UNKNOWN;
-    struct Node * n(nullptr);
+    status = AStarStatus::ASTAR_NODE_NOT_IN_GRAPH;
+    struct AStarNode * n(nullptr);
 
-    if (loc_.db_.find(id) != loc_.db_.end())
+    if (graph_.nodes_.find(std::make_pair(id, mode)) != graph_.nodes_.end())
     {
-        n = new struct Node;
+        n = createNode(graph_.nodes_.at(std::make_pair(id, mode)), status);
+    }
+
+    return n;
+}
+
+struct AStar::AStarNode * AStar::createNode(graph::Node * gNode, AStarStatus & status)
+{
+    struct AStarNode * n(nullptr);
+    status = AStarStatus::ASTAR_NULL_GRAPH_NODE;
+
+    if (nullptr != gNode)
+    {
+        n = new struct AStarNode;
         nodeList_.push_back(n);
 
-        n->id = loc_.db_[id].id;
+        n->gNode = gNode;
 
         n->f = std::numeric_limits<double>::max();
         n->g = std::numeric_limits<double>::max();
         n->h = std::numeric_limits<double>::max();
 
-        n->parent = 0;
+        n->parent = nullptr;
 
         n->numChildren = 0;
         memset(n->children, 0, sizeof(n->children));
 
         status = AStarStatus::ASTAR_OK;
+    }
+    else
+    {
+        printf("ERROR: (AStar::createNode) graph::Node is null!\n");
     }
 
     return n;
@@ -213,48 +242,67 @@ struct AStar::Node * AStar::createNode(unsigned int id, AStarStatus & status)
 
 double AStar::heuritic(unsigned int id)
 {
-    NodeDatabaseStatus status(NodeDatabaseStatus::UNKNOWN);
-    return loc_.lineOfSight(id, goalId_, status);
+    double cost(std::numeric_limits<double>::max());
+
+    graph::GraphStatus status(graph::GraphStatus::UNKNOWN);
+    double los(graph_.lineOfSight(id, goalId_, status));
+
+    switch (costType_)
+    {
+    case CostType::DISTANCE:
+        cost = los;
+        break;
+
+    case CostType::TIME_NO_TRAFFIC:
+    case CostType::TIME_WITH_TRAFFIC:
+        cost = los / (fastestMode() * KM_TO_MILE) * HR_TO_MIN;
+        break;
+
+    case CostType::UNKNOWN:
+    default:
+        printf("ERROR: (AStar::heuritic) Unknown cost type!\n");
+    }
+
+    return cost;
 }
 
-AStarStatus AStar::findChildren(struct Node * n)
+AStarStatus AStar::findChildren(struct AStarNode * n)
 {
     AStarStatus retVal(AStarStatus::UNKNOWN);
 
-    struct NodeDatabase::NodeDatabaseType & nData(loc_.db_[n->id]);
-    unsigned int id1(0);
-    unsigned int id2(0);
+    graph::Node * gNode(n->gNode);
+    graph::Edge * gEdge(nullptr);
 
-    n->numChildren = nData.numNeighbors;
+    n->numChildren = gNode->numChildren();
 
-    for (unsigned int i(0); i < nData.numNeighbors; ++i)
+    for (unsigned int i(0); i < (n->numChildren); ++i)
     {
-        struct Node * c = createNode(nData.neighbor[i], retVal);
+        struct AStarNode * c = createNode(gNode->child(i), retVal);
         if (AStarStatus::ASTAR_OK == retVal)
         {
-            try
+            gEdge = gNode->outgoing(i);
+            if ((nullptr != gEdge) &&
+                (gEdge->src() == n->gNode) &&
+                (gEdge->dest() == c->gNode))
             {
-                // Edge DB map key ID pair needs to have smaller ID first
-                id1 = (n->id < c->id) ? n->id : c->id;
-                id2 = (n->id < c->id) ? c->id : n->id;
-
-                // std::map::at throws out_of_range exception
-                struct EdgeDatabase::EdgeDatabaseType & eData = path_.db_.at(std::make_pair(id1, id2));
-
-                c->g = n->g + eData.dist_mile;
-                c->h = heuritic(c->id);
+                graph::EdgeStatus eStatus(graph::EdgeStatus::UNKNOWN);
+                c->g = n->g + gEdge->cost(costType_, n->hr, n->min, c->hr, c->min, eStatus);
+                c->h = heuritic((c->gNode)->id());
                 c->f = c->g + c->h;
 
                 c->parent = n;
 
                 n->children[i] = c;
 
-                retVal = AStarStatus::ASTAR_OK;
-            }
-            catch (const std::out_of_range & oor)
-            {
-                (void) oor;
-                printf("ERROR: (AStar::findChildren) Edge does not exist!");
+                if (graph::EdgeStatus::EDGE_OK == eStatus)
+                {
+                    retVal = AStarStatus::ASTAR_OK;
+                }
+                else
+                {
+                    retVal = AStarStatus::ASTAR_EDGE_COST_FAILED;
+                    printf("ERROR: (AStar::findChildren) Edge cost failed\n");
+                }
             }
         }
     }
@@ -262,12 +310,12 @@ AStarStatus AStar::findChildren(struct Node * n)
     return retVal;
 }
 
-bool AStar::isOpen(struct Node * n)
+bool AStar::isOpen(struct AStarNode * n)
 {
-    for (std::list<struct Node *>::iterator it(open_.begin());
+    for (std::list<struct AStarNode *>::iterator it(open_.begin());
         it != open_.end(); ++it)
     {
-        if (((*it)->id) == (n->id))
+        if (((*it)->gNode) == (n->gNode))
         {
             return true;
         }
@@ -276,12 +324,12 @@ bool AStar::isOpen(struct Node * n)
     return false;
 }
 
-bool AStar::isClosed(struct Node * n)
+bool AStar::isClosed(struct AStarNode * n)
 {
-    for (std::list<struct Node *>::iterator it(closed_.begin());
+    for (std::list<struct AStarNode *>::iterator it(closed_.begin());
         it != closed_.end(); ++it)
     {
-        if (((*it)->id) == (n->id))
+        if (((*it)->gNode) == (n->gNode))
         {
             return true;
         }
@@ -290,23 +338,23 @@ bool AStar::isClosed(struct Node * n)
     return false;
 }
 
-bool compare_node(AStar::Node * n1, AStar::Node * n2)
+bool compare_node(AStar::AStarNode * n1, AStar::AStarNode * n2)
 {
     return n1->f < n2->f;
 }
 
-void AStar::addToOpen(struct Node * n)
+void AStar::addToOpen(struct AStarNode * n)
 {
     open_.push_back(n);
     open_.sort(compare_node);
 }
 
-void AStar::updateOpen(struct Node * n)
+void AStar::updateOpen(struct AStarNode * n)
 {
-    for (std::list<struct Node *>::iterator it(open_.begin());
+    for (std::list<struct AStarNode *>::iterator it(open_.begin());
         it != open_.end(); ++it)
     {
-        if (((*it)->id) == (n->id))
+        if (((*it)->gNode) == (n->gNode))
         {
             if (((*it)->g) > (n->g))
             {
@@ -319,25 +367,27 @@ void AStar::updateOpen(struct Node * n)
 
 }
 
-void AStar::reconstructPath(struct Node * n)
+void AStar::reconstructPath(struct AStarNode * n)
 {
     solution_.clear();
 
-    struct Node * currNode = n;
+    struct AStarNode * currNode(n);
 
     // To print the solution from the start node,
     // push parent nodes in the front of the solution list
-    while (0 != currNode)
+    while (nullptr != currNode)
     {
         solution_.push_front(currNode);
         currNode = currNode->parent;
     }
 
     unsigned int order(1);
-    for (std::list<struct Node *>::iterator it(solution_.begin());
+    for (std::list<struct AStarNode *>::iterator it(solution_.begin());
         it != solution_.end(); ++it)
     {
-        printf("  %2d:  %d  (%f)\n", order, (*it)->id, (*it)->g);
+        printf("  %2d:  %u%c  (%f)\n", order, ((*it)->gNode)->id(), tModeChar(((*it)->gNode)->mode()), (*it)->g);
         ++order;
     }
 }
+
+} // namespace astar

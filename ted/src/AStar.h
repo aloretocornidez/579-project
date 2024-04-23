@@ -14,13 +14,21 @@
 
 #include <list>
 
-#include "EdgeDatabase.h"
-#include "NodeDatabase.h"
+#include "CommonUtilities.h"
+#include "Edge.h"
+#include "Node.h"
+#include "Graph.h"
+
+namespace astar
+{
 
 enum class AStarStatus : unsigned int
 {
     ASTAR_OK,
+    ASTAR_NODE_NOT_IN_GRAPH,
+    ASTAR_NULL_GRAPH_NODE,
     ASTAR_INIT_FAILED,
+    ASTAR_EDGE_COST_FAILED,
     ASTAR_GOAL_NULL,
     ASTAR_FAILED_TO_FIND_GOAL,
     UNKNOWN
@@ -29,23 +37,30 @@ enum class AStarStatus : unsigned int
 class AStar
 {
 public:
-    static const unsigned int MAX_CHILDREN = 6; // # of max possible children will change
+    static const unsigned int MAX_CHILDREN = 15u; // # of max possible children will change
 
-    struct Node
+    struct AStarNode
     {
-        unsigned int id;
+        //unsigned int id;
+        //TransportMode mode;
+        graph::Node * gNode;
+        unsigned int hr;
+        double min;
+
         double f;
         double g;
         double h;
         unsigned int numChildren;
-        struct Node * parent;
-        struct Node * children[MAX_CHILDREN];
+        struct AStarNode * parent;
+        struct AStarNode * children[MAX_CHILDREN];
     };
 
-    AStar(EdgeDatabase & eDb, NodeDatabase & nDb);
+    AStar(graph::Graph & g);
     ~AStar();
 
-    AStarStatus solve(unsigned int startId, unsigned int goalId);
+    AStarStatus solve(unsigned int startId, unsigned int goalId, 
+                      CostType costType = CostType::DISTANCE, 
+                      unsigned int hr = 0, double min = 0.0);
 
 private:
     AStarStatus initialize();
@@ -53,35 +68,40 @@ private:
 
     AStarStatus run();
 
-    struct Node * createNode(unsigned int id, AStarStatus & status);
+    struct AStarNode * createNode(unsigned int id, TransportMode mode, AStarStatus & status);
+    struct AStarNode * createNode(graph::Node * gNode, AStarStatus & status);
 
     double heuritic(unsigned int id);
 
-    AStarStatus findChildren(struct Node * n);
+    AStarStatus findChildren(struct AStarNode * n);
 
-    bool isOpen(struct Node * n);
-    bool isClosed(struct Node * n);
+    bool isOpen(struct AStarNode * n);
+    bool isClosed(struct AStarNode * n);
 
-    void addToOpen(struct Node * n);
-    void updateOpen(struct Node * n);
+    void addToOpen(struct AStarNode * n);
+    void updateOpen(struct AStarNode * n);
 
-    void reconstructPath(struct Node * n);
+    void reconstructPath(struct AStarNode * n);
 
-    EdgeDatabase & path_;
-    NodeDatabase & loc_;
+    graph::Graph & graph_;
 
-    std::list<struct Node *> open_;
-    std::list<struct Node *> closed_;
+    std::list<struct AStarNode *> open_;
+    std::list<struct AStarNode *> closed_;
 
-    std::list<struct Node *> solution_;
+    std::list<struct AStarNode *> solution_;
 
-    std::list<struct Node *> nodeList_;
+    std::list<struct AStarNode *> nodeList_;
 
     unsigned int startId_;
     unsigned int goalId_;
+    CostType costType_;
+    unsigned int hr_;
+    double min_;
 
-    struct Node * goal_;
+    struct AStarNode * goal_;
 
 };
+
+} // namespace astar
 
 #endif /* A_STAR_H */

@@ -12,21 +12,36 @@
 #include <cstdio>
 
 #include "AStar.h"
-#include "EdgeDatabase.h"
-#include "NodeDatabase.h"
+#include "CatTranDatabase.h"
+#include "Graph.h"
+#include "LocationDatabase.h"
+#include "PathDatabase.h"
+#include "TrafficDatabase.h"
 
 int main()
 {
-    EdgeDatabase edb;
-    edb.read("../../data/edge.csv");
-    //edb.print();
+    PathDatabase pdb;
+    pdb.read("../../data/edge.csv");
+    //pdb.print();
 
-    NodeDatabase ndb;
-    ndb.read("../../data/node.csv");
-    //ndb.print();
+    LocationDatabase ldb;
+    ldb.read("../../data/node.csv");
+    //ldb.print();
 
-    AStar a(edb, ndb);
-    a.solve(6, 52);
+    TrafficDatabase tdb;
+    tdb.read("../../data/traffic.csv");
+    //tdb.print();
+
+    CatTranDatabase cdb;
+    cdb.read("../../data/cattran.csv");
+    //cdb.print();
+
+    graph::Graph g(ldb, pdb, tdb, cdb);
+    g.build();
+    //g.print();
+
+    astar::AStar a(g);
+    a.solve(52, 2, CostType::TIME_WITH_TRAFFIC, 7, 2.0);
 
     return 0;
 }
