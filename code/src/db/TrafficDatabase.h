@@ -16,33 +16,32 @@
 
 enum class TrafficDatabaseStatus : unsigned int
 {
-    TRAFFIC_OK,
-    TRAFFIC_FILE_OPEN_FAILED,
-    TRAFFIC_BAD_FORMAT,
-    UNKNOWN
+  TRAFFIC_OK,
+  TRAFFIC_FILE_OPEN_FAILED,
+  TRAFFIC_BAD_FORMAT,
+  UNKNOWN
 };
 
 class TrafficDatabase
 {
 public:
-    struct TrafficDatabaseType
-    {
-        unsigned int hr;
-        unsigned int min;
-        double coefficient;
-    };
+  struct TrafficDatabaseType
+  {
+    unsigned int hr;
+    unsigned int min;
+    double coefficient;
+  };
 
-    TrafficDatabase();
-    ~TrafficDatabase();
+  TrafficDatabase();
+  ~TrafficDatabase();
 
-    TrafficDatabaseStatus read(const char * filename);
-    void print();
+  TrafficDatabaseStatus read(const char *filename);
+  void print();
 
-    std::map<std::pair<unsigned int, unsigned int>, struct TrafficDatabaseType> db_;
+  std::map<std::pair<unsigned int, unsigned int>, struct TrafficDatabaseType> db_;
 
 private:
-    static constexpr double CONVERSION_FACTOR = 1.0;
-
+  static constexpr double CONVERSION_FACTOR = 1.0;
 };
 
 #endif /* TRAFFIC_DATABASE_H */

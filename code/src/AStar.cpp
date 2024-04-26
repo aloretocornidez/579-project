@@ -9,15 +9,24 @@
 //     Ted Ha (ttha)
 //
 
+#include "AStar.h"
 #include <cstring>
 #include <limits>
 #include <stdio.h>
-#include "AStar.h"
 
 namespace astar
 {
 
-AStar::AStar(graph::Graph &g) : graph_(g), startId_(0), goalId_(0), costType_(CostType::UNKNOWN), hr_(0), min_(0.0), goal_(nullptr) {}
+AStar::AStar(graph::Graph &g)
+    : graph_(g)
+    , startId_(0)
+    , goalId_(0)
+    , costType_(CostType::UNKNOWN)
+    , hr_(0)
+    , min_(0.0)
+    , goal_(nullptr)
+{
+}
 
 AStar::~AStar() {}
 

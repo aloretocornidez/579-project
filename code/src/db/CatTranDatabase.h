@@ -16,36 +16,35 @@
 
 enum class CatTranDatabaseStatus : unsigned int
 {
-    CATTRAN_OK,
-    CATTRAN_FILE_OPEN_FAILED,
-    CATTRAN_BAD_FORMAT,
-    UNKNOWN
+  CATTRAN_OK,
+  CATTRAN_FILE_OPEN_FAILED,
+  CATTRAN_BAD_FORMAT,
+  UNKNOWN
 };
 
 class CatTranDatabase
 {
 public:
-    static constexpr unsigned int TOTAL_MIN = 661u; // Number of min from 7:00 to 18:00
-    
-    struct CatTranDatabaseType
-    {
-        unsigned int locId;
-        unsigned int hr;
-        unsigned int min;
-        unsigned int minToNext; // Number of min to the next bus
-    };
+  static constexpr unsigned int TOTAL_MIN = 661u; // Number of min from 7:00 to 18:00
 
-    CatTranDatabase();
-    ~CatTranDatabase();
+  struct CatTranDatabaseType
+  {
+    unsigned int locId;
+    unsigned int hr;
+    unsigned int min;
+    unsigned int minToNext; // Number of min to the next bus
+  };
 
-    CatTranDatabaseStatus read(const char * filename);
-    void print();
+  CatTranDatabase();
+  ~CatTranDatabase();
 
-    std::map<std::tuple<unsigned int, unsigned int, unsigned int>, struct CatTranDatabaseType> db_;
+  CatTranDatabaseStatus read(const char *filename);
+  void print();
+
+  std::map<std::tuple<unsigned int, unsigned int, unsigned int>, struct CatTranDatabaseType> db_;
 
 private:
-    static constexpr unsigned int NUM_SAMPLES = 34;
-
+  static constexpr unsigned int NUM_SAMPLES = 34;
 };
 
 #endif /* CATTRAN_DATABASE_H */

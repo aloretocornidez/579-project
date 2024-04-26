@@ -16,73 +16,69 @@
 
 #include "TrafficDatabase.h"
 
-TrafficDatabase::TrafficDatabase()
-{
-}
+TrafficDatabase::TrafficDatabase() {}
 
 TrafficDatabase::~TrafficDatabase()
 {
-    if (true == db_.empty())
-    {
-        db_.clear();
-    }
+  if (true == db_.empty())
+  {
+    db_.clear();
+  }
 }
 
-TrafficDatabaseStatus TrafficDatabase::read(const char * filename)
+TrafficDatabaseStatus TrafficDatabase::read(const char *filename)
 {
-    TrafficDatabaseStatus retVal(TrafficDatabaseStatus::UNKNOWN);
+  TrafficDatabaseStatus retVal(TrafficDatabaseStatus::UNKNOWN);
 
-    std::fstream f;
-    f.open(filename, std::fstream::in);
-    if (true == f.good())
+  std::fstream f;
+  f.open(filename, std::fstream::in);
+  if (true == f.good())
+  {
+    struct TrafficDatabaseType t = {0};
+    double trafficAmount(0.0);
+    char comma(',');
+
+    std::string line;
+    while (std::getline(f, line))
     {
-        struct TrafficDatabaseType t = {0};
-        double trafficAmount(0.0);
-        char comma(',');
+      // printf("%s\n", line.c_str());
 
-        std::string line;
-        while (std::getline(f, line))
-        {
-            //printf("%s\n", line.c_str());
+      std::stringstream ss(line);
 
-            std::stringstream ss(line);
+      if (!(ss >> t.hr >> comma)) retVal = TrafficDatabaseStatus::TRAFFIC_BAD_FORMAT;
+      if (!(ss >> t.min >> comma)) retVal = TrafficDatabaseStatus::TRAFFIC_BAD_FORMAT;
+      if (!(ss >> trafficAmount)) retVal = TrafficDatabaseStatus::TRAFFIC_BAD_FORMAT;
 
-            if (!(ss >> t.hr >> comma))  retVal = TrafficDatabaseStatus::TRAFFIC_BAD_FORMAT;
-            if (!(ss >> t.min >> comma)) retVal = TrafficDatabaseStatus::TRAFFIC_BAD_FORMAT;
-            if (!(ss >> trafficAmount))  retVal = TrafficDatabaseStatus::TRAFFIC_BAD_FORMAT;
+      if (TrafficDatabaseStatus::TRAFFIC_BAD_FORMAT == retVal)
+      {
+        printf("ERROR: (TrafficDatabase::read) Bad format!\n");
+      }
 
-            if (TrafficDatabaseStatus::TRAFFIC_BAD_FORMAT == retVal)
-            {
-                printf("ERROR: (TrafficDatabase::read) Bad format!\n");
-            }
+      t.coefficient = (1 - trafficAmount) * CONVERSION_FACTOR;
 
-            t.coefficient = (1 - trafficAmount) * CONVERSION_FACTOR;
-
-            db_[std::make_pair(t.hr, t.min)] = t;
-        }
-
-        if (TrafficDatabaseStatus::UNKNOWN == retVal)
-        {
-            retVal = TrafficDatabaseStatus::TRAFFIC_OK;
-        }
-    }
-    else
-    {
-        printf("ERROR: (TrafficDatabase::read) fstream::open failed!\n");
-        return TrafficDatabaseStatus::TRAFFIC_FILE_OPEN_FAILED;
+      db_[std::make_pair(t.hr, t.min)] = t;
     }
 
-    f.close();
+    if (TrafficDatabaseStatus::UNKNOWN == retVal)
+    {
+      retVal = TrafficDatabaseStatus::TRAFFIC_OK;
+    }
+  }
+  else
+  {
+    printf("ERROR: (TrafficDatabase::read) fstream::open failed!\n");
+    return TrafficDatabaseStatus::TRAFFIC_FILE_OPEN_FAILED;
+  }
 
-    return retVal;
+  f.close();
+
+  return retVal;
 }
 
 void TrafficDatabase::print()
 {
-    for (std::map<std::pair<unsigned int, unsigned int>, struct TrafficDatabaseType>::iterator it(db_.begin());
-         it != db_.end(); ++it)
-    {
-        printf("%02u:%02u -  traffic coeff: %f\n",
-               (it->second).hr, (it->second).min, (it->second).coefficient);
-    }
+  for (std::map<std::pair<unsigned int, unsigned int>, struct TrafficDatabaseType>::iterator it(db_.begin()); it != db_.end(); ++it)
+  {
+    printf("%02u:%02u -  traffic coeff: %f\n", (it->second).hr, (it->second).min, (it->second).coefficient);
+  }
 }

@@ -9,8 +9,6 @@
 //     Ted Ha (ttha)
 //
 
-#include <cstdio>
-
 #include "./db/CatTranDatabase.h"
 #include "./db/LocationDatabase.h"
 #include "./db/PathDatabase.h"

@@ -10,7 +10,6 @@
 //
 
 #include <cstdio>
-#include <limits>
 #include <stdexcept>
 
 #include "Graph.h"
@@ -18,7 +17,13 @@
 namespace graph
 {
 
-Graph::Graph(LocationDatabase &ldb, PathDatabase &pdb, TrafficDatabase &tdb, CatTranDatabase &cdb) : loc_(ldb), path_(pdb), traffic_(tdb), cattran_(cdb) {}
+Graph::Graph(LocationDatabase &ldb, PathDatabase &pdb, TrafficDatabase &tdb, CatTranDatabase &cdb)
+    : loc_(ldb)
+    , path_(pdb)
+    , traffic_(tdb)
+    , cattran_(cdb)
+{
+}
 
 Graph::~Graph()
 {
