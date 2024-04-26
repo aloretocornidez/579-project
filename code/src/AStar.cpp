@@ -9,23 +9,26 @@
 //     Ted Ha (ttha)
 //
 
-#include "AStar.h"
-#include "db/LocationDatabase.h"
-#include "db/PathDatabase.h"
 #include <cstring>
 #include <limits>
-#include <stdexcept>
 #include <stdio.h>
+#include "AStar.h"
 
-AStar::AStar(PathDatabase &eDb, LocationDatabase &nDb) : path_(eDb), loc_(nDb), startId_(0), goalId_(0), goal_(nullptr), node_id_counter(0) {}
+namespace astar
+{
+
+AStar::AStar(graph::Graph &g) : graph_(g), startId_(0), goalId_(0), costType_(CostType::UNKNOWN), hr_(0), min_(0.0), goal_(nullptr) {}
 
 AStar::~AStar() {}
 
-AStarStatus AStar::solve(unsigned int startId, unsigned int goalId)
+AStarStatus AStar::solve(unsigned int startId, unsigned int goalId, CostType costType, unsigned int hr, double min)
 {
   AStarStatus retVal(AStarStatus::UNKNOWN);
   startId_ = startId;
   goalId_ = goalId;
+  costType_ = costType;
+  hr_ = hr;
+  min_ = min;
 
   // auto start{ std::chrono::high_resolution_clock::now() };
 
@@ -40,32 +43,31 @@ AStarStatus AStar::solve(unsigned int startId, unsigned int goalId)
   // auto end{ std::chrono::high_resolution_clock::now() };
   // std::chrono::duration<double> elapsedSec{ end - start };
   // printf("  Elapsed: %lld ns\n",
-  // std::chrono::duration_cast<std::chrono::nanoseconds>(elapsedSec).count());
+  //     std::chrono::duration_cast<std::chrono::nanoseconds>(elapsedSec).count());
 
   return retVal;
 }
 
 AStarStatus AStar::initialize()
 {
-  // Return Status
   AStarStatus retVal(AStarStatus::UNKNOWN);
 
-  // If the queues are empty, initialize them.
-  if (open_.empty() && closed_.empty() && nodeList_.empty())
+  if ((true == open_.empty()) && (true == closed_.empty()) && (true == nodeList_.empty()))
   {
-    // Create the initial node with a given location ID
-    Node *n = createNode(startId_, retVal);
+    struct AStarNode *n = createNode(startId_, TransportMode::NONE, retVal);
     if ((AStarStatus::ASTAR_OK == retVal) && (nullptr != n))
     {
+      n->hr = hr_;
+      n->min = min_;
+
       n->g = 0;
-      n->h = heuristic(n->location_id);
+      n->h = heuritic((n->gNode)->id());
       n->f = n->g + n->h;
 
       open_.push_back(n);
       retVal = AStarStatus::ASTAR_OK;
     }
   }
-  // Queues were not empty, error.
   else
   {
     retVal = AStarStatus::ASTAR_INIT_FAILED;
@@ -76,7 +78,7 @@ AStarStatus AStar::initialize()
 
 void AStar::finalize()
 {
-  for (std::list<Node *>::iterator it(nodeList_.begin()); it != nodeList_.end(); ++it)
+  for (std::list<struct AStarNode *>::iterator it(nodeList_.begin()); it != nodeList_.end(); ++it)
   {
     if (*it != 0)
     {
@@ -97,34 +99,34 @@ AStarStatus AStar::run()
 {
   AStarStatus retVal(AStarStatus::UNKNOWN);
 
-  Node *currNode(0);
+  struct AStarNode *currNode(0);
   bool foundGoal(false);
 
   while ((false == foundGoal) && (false == open_.empty()))
   {
+    //
     // 1. Find the lowest f in the open list, place it in the closed list
-    currNode = open_.front(); // TO DO: Where is the open
-                              // queue being sorted?
+    currNode = open_.front();
     open_.pop_front();
 
     closed_.push_back(currNode);
 
     // 1a. If the current node is a goal node, end search
-    if (goalId_ == currNode->location_id)
+    if (goalId_ == (currNode->gNode)->id())
     {
       foundGoal = true;
       goal_ = currNode;
       break;
     }
 
+    //
     // 2. Expand the node
     retVal = findChildren(currNode);
 
+    //
     // 3. For each child
-    // TO DO: Refactor this based on output of updated findChildren() method
-    Node *child(nullptr);
-    for (unsigned int i(0); i < (0); ++i)
-    // for (unsigned int i(0); i < (currNode->numDestinations); ++i)
+    struct AStarNode *child(nullptr);
+    for (unsigned int i(0); i < (currNode->numChildren); ++i)
     {
       child = currNode->children[i];
 
@@ -135,16 +137,14 @@ AStarStatus AStar::run()
       }
 
       // 3b. If a goal node, end search
-      if (goalId_ == child->location_id) // Huh? Don't think this
-                                         // check should be here.
+      if (goalId_ == (child->gNode)->id())
       {
         foundGoal = true;
         goal_ = child;
         break;
       }
 
-      // 3c. If not in the open list, calculate f, g, h, then add to the
-      // open list
+      // 3c. If not in the open list, calculate f, g, h, then add to the open list
       if (false == isOpen(child))
       {
         // f, g, h already updated in findChildren
@@ -163,7 +163,6 @@ AStarStatus AStar::run()
   {
     if (nullptr != goal_)
     {
-
       reconstructPath(goal_);
       retVal = AStarStatus::ASTAR_OK;
     }
@@ -182,193 +181,111 @@ AStarStatus AStar::run()
   return retVal;
 }
 
-AStar::Node *AStar::createNode(unsigned int id, AStarStatus &status)
+struct AStar::AStarNode *AStar::createNode(unsigned int id, TransportMode mode, AStarStatus &status)
 {
-  status = AStarStatus::UNKNOWN;
+  status = AStarStatus::ASTAR_NODE_NOT_IN_GRAPH;
+  struct AStarNode *n(nullptr);
 
-  // Create a temporary node initialized with nullptr.
-  Node *n(nullptr);
-
-  // TODO: Make sure to take into account, the ID of the location being
-  // separate from the node ID in the search tree of the algorithm.
-
-  // If the id is found (find returns end.)
-  if (loc_.db_.find(id) != loc_.db_.end())
+  if (graph_.nodes_.find(std::make_pair(id, mode)) != graph_.nodes_.end())
   {
-    // Create a new node.
-    n = new Node;
+    n = createNode(graph_.nodes_.at(std::make_pair(id, mode)), status);
+  }
 
-    // Add the generated node to keep track of memory.
+  return n;
+}
+
+struct AStar::AStarNode *AStar::createNode(graph::Node *gNode, AStarStatus &status)
+{
+  struct AStarNode *n(nullptr);
+  status = AStarStatus::ASTAR_NULL_GRAPH_NODE;
+
+  if (nullptr != gNode)
+  {
+    n = new struct AStarNode;
     nodeList_.push_back(n);
 
-    // Update the location_id of the created node.
-    n->location_id = loc_.db_[id].location_id;
+    n->gNode = gNode;
 
-    // Update the ID of the created node.
-    n->node_id = node_id_counter++;
-
-    // Initialize to max possible cost.
     n->f = std::numeric_limits<double>::max();
     n->g = std::numeric_limits<double>::max();
     n->h = std::numeric_limits<double>::max();
 
-    // Initialize a 0 value for the parent.
-    n->parent = 0;
+    n->parent = nullptr;
 
-    // Initializing unknown arrival method.
-    n->arrivalMethod = ArrivalMethod::UNKNOWN;
-
-    // Initialize the number of children to 0.
-    // n->numDestinations = 0; // Removed for now.
-
-    // Make sure the rest of the data is set to 0.
+    n->numChildren = 0;
     memset(n->children, 0, sizeof(n->children));
 
-    // Set an okay return status.
     status = AStarStatus::ASTAR_OK;
   }
+  else
+  {
+    printf("ERROR: (AStar::createNode) graph::Node is null!\n");
+  }
 
-  // Return the address of the created node.
   return n;
 }
 
-double AStar::heuristic(unsigned int id)
+double AStar::heuritic(unsigned int id)
 {
-  LocationDatabaseStatus status(LocationDatabaseStatus::UNKNOWN);
-  return loc_.lineOfSight(id, goalId_, status);
+  double cost(std::numeric_limits<double>::max());
+
+  graph::GraphStatus status(graph::GraphStatus::UNKNOWN);
+  double los(graph_.lineOfSight(id, goalId_, status));
+
+  switch (costType_)
+  {
+  case CostType::DISTANCE:
+    cost = los;
+    break;
+
+  case CostType::TIME_NO_TRAFFIC:
+  case CostType::TIME_WITH_TRAFFIC:
+    cost = los / (fastestMode() * KM_TO_MILE) * HR_TO_MIN;
+    break;
+
+  case CostType::UNKNOWN:
+  default:
+    printf("ERROR: (AStar::heuritic) Unknown cost type!\n");
+  }
+
+  return cost;
 }
 
-// TO DO: Rework this function using Elliot's psuedocode
-AStarStatus AStar::findChildren(Node *n)
+AStarStatus AStar::findChildren(struct AStarNode *n)
 {
-  // Return value for success in child generation.
   AStarStatus retVal(AStarStatus::UNKNOWN);
 
-  // Find the data of the node that was passed as input.
-  struct LocationDatabase::Location &nData(loc_.db_[n->location_id]);
+  graph::Node *gNode(n->gNode);
+  graph::Edge *gEdge(nullptr);
 
-  // id is used to populate the edge's id fields.
-  unsigned int id1(0);
-  unsigned int id2(0);
+  n->numChildren = gNode->numChildren();
 
-  // Get the possible number of children for the current node.
-  // n->numDestinations = nData.num_outbound_paths;
-
-  //
-  for (unsigned int i(0); i < nData.num_outbound_paths; ++i)
+  for (unsigned int i(0); i < (n->numChildren); ++i)
   {
-    // Create the node for each new path.
-    Node *c = createNode(nData.outbound_paths[i], retVal);
-
-    // If the node is created successfully.
+    struct AStarNode *c = createNode(gNode->child(i), retVal);
     if (AStarStatus::ASTAR_OK == retVal)
     {
-      try
+      gEdge = gNode->outgoing(i);
+      if ((nullptr != gEdge) && (gEdge->src() == n->gNode) && (gEdge->dest() == c->gNode))
       {
-
-        // Edge DB map key ID pair needs to have smaller ID first
-        id1 = (n->node_id < c->node_id) ? n->node_id : c->node_id;
-        id2 = (n->node_id < c->node_id) ? c->node_id : n->node_id;
-
-        // std::map::at throws out_of_range exception
-        struct PathDatabase::PathDatabaseType &pathData = path_.db_.at(std::make_pair(id1, id2));
-        LocationDatabase::Location newLocation = loc_.db_[c->location_id];
-
-        // Check if the path supports walking.
-        if (pathData.mode == PathDatabase::PathDatabaseMode::WALK)
-        {
-          // Check if the arrival method was walking
-          if (n->arrivalMethod == ArrivalMethod::WALKED)
-          {
-          }
-          else if (n->arrivalMethod == ArrivalMethod::BIKED)
-          {
-            // check if new location is location is bike depot.
-            if (newLocation.isBikeDepot)
-            {
-            }
-          }
-          else if (n->arrivalMethod == ArrivalMethod::CAT_TRANNED)
-          {
-            // Check if location is cat tran stop.
-            if (newLocation.isCatTranStop)
-            {
-            }
-          }
-        }
-        // Check if the path supports biking
-        if (pathData.mode == PathDatabase::PathDatabaseMode::WALK_BIKE)
-        {
-
-          // Check if the arrival method was walking
-          if (n->arrivalMethod == ArrivalMethod::WALKED)
-          {
-            // create new node with location_id =
-            // pathDestinationLocation and arrivalMethod = walking
-            // calculate the cost using path.dist_mile and speed of
-            // walking append to children
-          }
-          else if (n->arrivalMethod == ArrivalMethod::BIKED)
-          {
-            // check if new location is location is bike depot.
-            if (newLocation.isBikeDepot)
-            {
-              // create new node with location_id =
-              // pathDestinationLocation and arrivalMethod =
-              // walking calculate the cost using path.dist_mile
-              // and speed of walking append to children
-            }
-          }
-          else if (n->arrivalMethod == ArrivalMethod::CAT_TRANNED)
-          {
-            // Check if location is cat tran stop.
-            if (newLocation.isCatTranStop)
-            {
-              // create new node with location_id =
-              // pathDestinationLocation and arrivalMethod =
-              // walking calculate the cost using path.dist_mile
-              // and speed of walking append to children
-            }
-          }
-        }
-        // Check if the path supports the cat tran.
-        if (pathData.mode == PathDatabase::PathDatabaseMode::WALK_BIKE_CATTRAN)
-        {
-
-          // Check if the arrival method was walking
-          if (n->arrivalMethod == ArrivalMethod::WALKED)
-          {
-          }
-          else if (n->arrivalMethod == ArrivalMethod::BIKED)
-          {
-            // check if new location is location is bike depot.
-            if (newLocation.isBikeDepot)
-            {
-            }
-          }
-          else if (n->arrivalMethod == ArrivalMethod::CAT_TRANNED)
-          {
-            // Check if location is cat tran stop.
-            if (newLocation.isCatTranStop)
-            {
-            }
-          }
-        }
-
-        c->g = n->g + pathData.dist_mile;
-        c->h = heuristic(c->node_id);
+        graph::EdgeStatus eStatus(graph::EdgeStatus::UNKNOWN);
+        c->g = n->g + gEdge->cost(costType_, n->hr, n->min, c->hr, c->min, eStatus);
+        c->h = heuritic((c->gNode)->id());
         c->f = c->g + c->h;
 
         c->parent = n;
 
         n->children[i] = c;
 
-        retVal = AStarStatus::ASTAR_OK;
-      }
-      catch (const std::out_of_range &oor)
-      {
-        (void)oor;
-        printf("ERROR: (AStar::findChildren) Edge does not exist!\n");
+        if (graph::EdgeStatus::EDGE_OK == eStatus)
+        {
+          retVal = AStarStatus::ASTAR_OK;
+        }
+        else
+        {
+          retVal = AStarStatus::ASTAR_EDGE_COST_FAILED;
+          printf("ERROR: (AStar::findChildren) Edge cost failed\n");
+        }
       }
     }
   }
@@ -376,13 +293,11 @@ AStarStatus AStar::findChildren(Node *n)
   return retVal;
 }
 
-// TO DO: it will be necessary to check ALL node properties except node_id to
-// detect equivalence
-bool AStar::isOpen(Node *n)
+bool AStar::isOpen(struct AStarNode *n)
 {
-  for (std::list<Node *>::iterator it(open_.begin()); it != open_.end(); ++it)
+  for (std::list<struct AStarNode *>::iterator it(open_.begin()); it != open_.end(); ++it)
   {
-    if (((*it)->location_id) == (n->location_id))
+    if (((*it)->gNode) == (n->gNode))
     {
       return true;
     }
@@ -391,13 +306,11 @@ bool AStar::isOpen(Node *n)
   return false;
 }
 
-// TO DO: it will be necessary to check ALL node properties except node_id to
-// detect equivalence
-bool AStar::isClosed(Node *n)
+bool AStar::isClosed(struct AStarNode *n)
 {
-  for (std::list<Node *>::iterator it(closed_.begin()); it != closed_.end(); ++it)
+  for (std::list<struct AStarNode *>::iterator it(closed_.begin()); it != closed_.end(); ++it)
   {
-    if (((*it)->node_id) == (n->node_id))
+    if (((*it)->gNode) == (n->gNode))
     {
       return true;
     }
@@ -406,21 +319,19 @@ bool AStar::isClosed(Node *n)
   return false;
 }
 
-bool compare_node(AStar::Node *n1, AStar::Node *n2) { return n1->f < n2->f; }
+bool compare_node(AStar::AStarNode *n1, AStar::AStarNode *n2) { return n1->f < n2->f; }
 
-void AStar::addToOpen(Node *n)
+void AStar::addToOpen(struct AStarNode *n)
 {
   open_.push_back(n);
   open_.sort(compare_node);
 }
 
-// TO DO: it will be necessary to check ALL node properties except node_id to
-// detect equivalence
-void AStar::updateOpen(Node *n)
+void AStar::updateOpen(struct AStarNode *n)
 {
-  for (std::list<Node *>::iterator it(open_.begin()); it != open_.end(); ++it)
+  for (std::list<struct AStarNode *>::iterator it(open_.begin()); it != open_.end(); ++it)
   {
-    if (((*it)->node_id) == (n->node_id))
+    if (((*it)->gNode) == (n->gNode))
     {
       if (((*it)->g) > (n->g))
       {
@@ -432,24 +343,26 @@ void AStar::updateOpen(Node *n)
   }
 }
 
-void AStar::reconstructPath(Node *n)
+void AStar::reconstructPath(struct AStarNode *n)
 {
   solution_.clear();
 
-  Node *currNode = n;
+  struct AStarNode *currNode(n);
 
   // To print the solution from the start node,
   // push parent nodes in the front of the solution list
-  while (0 != currNode)
+  while (nullptr != currNode)
   {
     solution_.push_front(currNode);
     currNode = currNode->parent;
   }
 
   unsigned int order(1);
-  for (std::list<Node *>::iterator it(solution_.begin()); it != solution_.end(); ++it)
+  for (std::list<struct AStarNode *>::iterator it(solution_.begin()); it != solution_.end(); ++it)
   {
-    // printf("  %2d:  %d  (%f)\n", order, (*it)->id, (*it)->g);
+    printf("  %2d:  %u%c  (%f)\n", order, ((*it)->gNode)->id(), tModeChar(((*it)->gNode)->mode()), (*it)->g);
     ++order;
   }
 }
+
+} // namespace astar

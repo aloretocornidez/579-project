@@ -16,51 +16,46 @@
 
 enum class PathDatabaseStatus : unsigned int
 {
-  PATH_OK,
-  PATH_FILE_OPEN_FAILED,
-  PATH_BAD_FORMAT,
-  PATH_INVALID_MODE,
-  UNKNOWN
+    PATH_OK,
+    PATH_FILE_OPEN_FAILED,
+    PATH_BAD_FORMAT,
+    PATH_INVALID_MODE,
+    UNKNOWN
 };
 
 class PathDatabase
 {
 public:
-  enum class PathDatabaseMode : unsigned int
-  {
-    UNAVAILABLE,
-    WALK,
-    WALK_BIKE,
-    WALK_BIKE_CATTRAN,
-    UNKNOWN
-  };
+    enum class PathDatabaseMode : unsigned int
+    {
+        UNAVAILABLE,
+        WALK,
+        WALK_BIKE,
+        WALK_BIKE_CATTRAN,
+        UNKNOWN
+    };
 
-  struct PathDatabaseType
-  {
-    unsigned int path_id;
-    unsigned int src;
-    unsigned int dest;
-    double dist_mile;
-    double straight_mile;
-    PathDatabaseMode mode;
-  };
+    struct PathDatabaseType
+    {
+        unsigned int src;
+        unsigned int dest;
+        double dist_mile;
+        double straight_mile;
+        PathDatabaseMode mode;
+    };
 
-  PathDatabase();
-  ~PathDatabase();
+    PathDatabase();
+    ~PathDatabase();
 
-  // Reads the data from the CSV file and populates the data into the database
-  // map.
-  PathDatabaseStatus read(const char *filename);
+    PathDatabaseStatus read(const char * filename);
+    void print();
 
-  void print();
-
-  // The database is stored in a map using the.
-  // source node ID and Destination node ID as keys.
-  // The edge parameters as the key value.
-  std::map<std::pair<unsigned int, unsigned int>, struct PathDatabaseType> db_;
+    std::map<std::pair<unsigned int, unsigned int>, struct PathDatabaseType> db_;
+    //std::map<std::pair<unsigned int, unsigned int>, struct PathDatabaseType> rdb_;
 
 private:
-  static const double FT_IN_MILE;
+    static constexpr double FT_IN_MILE = 5280.0;
+
 };
 
 #endif /* PATH_DATABASE_H */

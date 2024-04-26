@@ -12,110 +12,93 @@
 #ifndef A_STAR_H
 #define A_STAR_H
 
-#include <algorithm>
 #include <list>
 
-#include "./db/LocationDatabase.h"
-#include "./db/PathDatabase.h"
+#include "./graph/Edge.h"
+#include "./graph/Graph.h"
+#include "./graph/Node.h"
+#include "CommonUtilities.h"
+
+namespace astar
+{
 
 enum class AStarStatus : unsigned int
 {
   ASTAR_OK,
+  ASTAR_NODE_NOT_IN_GRAPH,
+  ASTAR_NULL_GRAPH_NODE,
   ASTAR_INIT_FAILED,
+  ASTAR_EDGE_COST_FAILED,
   ASTAR_GOAL_NULL,
   ASTAR_FAILED_TO_FIND_GOAL,
   UNKNOWN
 };
 
-// Used to calculate new cost of nodes.
-enum class ArrivalMethod : unsigned int
-{
-  WALKED,
-  BIKED,
-  CAT_TRANNED,
-  UNKNOWN
-};
-
 class AStar
 {
-
 public:
+  static const unsigned int MAX_CHILDREN = 15u; // # of max possible children will change
 
-  static const unsigned int MAX_CHILDREN = 6; // # of max possible children will change TO DO: Drop me?
-
-  typedef struct Node_s
+  struct AStarNode
   {
-    // Used to identify the node in the search tree.
-    unsigned int node_id;  // TO DO: I think this may be unnecessary, we detect equivalence by comparing other node properties
-    // Used to id the physical location that the node pertains to.
-    unsigned int location_id;
+    // unsigned int id;
+    // TransportMode mode;
+    graph::Node *gNode;
+    unsigned int hr;
+    double min;
 
-    // Heuristic information.
     double f;
     double g;
     double h;
+    unsigned int numChildren;
+    struct AStarNode *parent;
+    struct AStarNode *children[MAX_CHILDREN];
+  };
 
-    // Method by which we arrived at the node
-    ArrivalMethod arrivalMethod;
-
-    // unsigned int numDestinations;
-    Node_s *parent;
-    Node_s *children[MAX_CHILDREN];  // TO DO: Drop me?
-
-  } Node;
-
-  AStar(PathDatabase &eDb, LocationDatabase &nDb);
+  AStar(graph::Graph &g);
   ~AStar();
 
-  AStarStatus solve(unsigned int startId, unsigned int goalId);
+  AStarStatus solve(unsigned int startId, unsigned int goalId, CostType costType = CostType::DISTANCE, unsigned int hr = 0, double min = 0.0);
 
 private:
-
   AStarStatus initialize();
   void finalize();
 
   AStarStatus run();
 
-  Node *createNode(unsigned int id, AStarStatus &status);
+  struct AStarNode *createNode(unsigned int id, TransportMode mode, AStarStatus &status);
+  struct AStarNode *createNode(graph::Node *gNode, AStarStatus &status);
 
-  double heuristic(unsigned int id);
+  double heuritic(unsigned int id);
 
-  AStarStatus findChildren(Node *n);
+  AStarStatus findChildren(struct AStarNode *n);
 
-  bool isOpen(Node *n);
-  bool isClosed(Node *n);
+  bool isOpen(struct AStarNode *n);
+  bool isClosed(struct AStarNode *n);
 
-  void addToOpen(Node *n);
-  void updateOpen(Node *n);
+  void addToOpen(struct AStarNode *n);
+  void updateOpen(struct AStarNode *n);
 
-  void reconstructPath(Node *n);
+  void reconstructPath(struct AStarNode *n);
 
-  // Pathways
-  PathDatabase &path_;
-  // Locations
-  LocationDatabase &loc_;
+  graph::Graph &graph_;
 
-  // Open queue.
-  std::list<Node *> open_;
-  // Closed queue.
-  std::list<Node *> closed_;
+  std::list<struct AStarNode *> open_;
+  std::list<struct AStarNode *> closed_;
 
-  // Solution path.
-  std::list<Node *> solution_;
+  std::list<struct AStarNode *> solution_;
 
-  // Keep track of all allocated memory.
-  std::list<Node *> nodeList_;
+  std::list<struct AStarNode *> nodeList_;
 
-  // Start location
   unsigned int startId_;
-  // Goal location
   unsigned int goalId_;
+  CostType costType_;
+  unsigned int hr_;
+  double min_;
 
-  // Pointer to the goal node
-  Node *goal_;
-
-  unsigned int node_id_counter;
-
+  struct AStarNode *goal_;
 };
+
+} // namespace astar
 
 #endif /* A_STAR_H */
