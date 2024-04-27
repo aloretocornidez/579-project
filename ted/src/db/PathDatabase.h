@@ -42,6 +42,7 @@ public:
         double dist_mile;
         double straight_mile;
         PathDatabaseMode mode;
+        unsigned int trafficRating;
     };
 
     PathDatabase();

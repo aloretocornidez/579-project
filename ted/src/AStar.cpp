@@ -381,6 +381,7 @@ void AStar::reconstructPath(struct AStarNode * n)
         currNode = currNode->parent;
     }
 
+    printf("%2u:%02u:\n", hr_, static_cast<unsigned int>(min_));
     unsigned int order(1);
     for (std::list<struct AStarNode *>::iterator it(solution_.begin());
         it != solution_.end(); ++it)
@@ -388,6 +389,7 @@ void AStar::reconstructPath(struct AStarNode * n)
         printf("  %2d:  %u%c  (%f)\n", order, ((*it)->gNode)->id(), tModeChar(((*it)->gNode)->mode()), (*it)->g);
         ++order;
     }
+    printf("\n");
 }
 
 } // namespace astar

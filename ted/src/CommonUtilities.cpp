@@ -9,6 +9,9 @@
 //     Ted Ha (ttha)
 //
 
+#include <cstdio>
+#include <limits>
+
 #include "CommonUtilities.h"
 
 const char * tModeStr(TransportMode t)
@@ -74,6 +77,34 @@ double fastestMode()
     {
         return WALK_KPH;
     }
+}
+
+double toTrafficEdgeCoeff(unsigned int rating)
+{
+    double retVal(std::numeric_limits<double>::max());
+
+    switch (rating)
+    {
+    case 5:
+        retVal = TRAFFIC_RATING_5;
+        break;
+    case 4:
+        retVal = TRAFFIC_RATING_4;
+        break;
+    case 3:
+        retVal = TRAFFIC_RATING_3;
+        break;
+    case 2:
+        retVal = TRAFFIC_RATING_2;
+        break;
+    case 1:
+        retVal = TRAFFIC_RATING_1;
+        break;
+    default:
+        printf("ERROR: (CommonUtilities::toTrafficRating) Bad traffic rating!\n");
+    }
+
+    return retVal;
 }
 
 void addMin(double minToAdd,

@@ -42,6 +42,8 @@ Edge::Edge(Node * src, Node * dest, TransportMode mode,
     , mode_(mode)
     , distMile_(0.0)
     , speedMph_(0.0)
+    , trafficEdgeCoeff_(0.0)
+    , trafficModeCoeff_(0.0)
     , baseTimeMin_(0.0)
     , path_(pdb)
     , traffic_(tdb)
@@ -51,17 +53,21 @@ Edge::Edge(Node * src, Node * dest, TransportMode mode,
     {
     case TransportMode::WALK:
         speedMph_ = WALK_KPH * KM_TO_MILE;
+        trafficModeCoeff_ = WALK_TRAFFIC_MODE_COEFF;
         break;
     case TransportMode::BIKE:
         speedMph_ = BIKE_KPH * KM_TO_MILE;
+        trafficModeCoeff_ = BIKE_TRAFFIC_MODE_COEFF;
         break;
     case TransportMode::CATTRAN:
         speedMph_ = CATTRAN_KPH * KM_TO_MILE;
+        trafficModeCoeff_ = CATTRAN_TRAFFIC_MODE_COEFF;
         break;
     case TransportMode::NONE:
     case TransportMode::UNKNOWN:
     default:
         speedMph_ = 0.0;
+        trafficModeCoeff_ = 1.0;
         printf("ERROR: (Edge::Edge) Bad mode of transportation!\n");
     }
 
@@ -72,6 +78,7 @@ Edge::Edge(Node * src, Node * dest, TransportMode mode,
 
         PathDatabase::PathDatabaseType & p = path_.db_.at(std::make_pair(id1, id2));
         distMile_ = p.dist_mile;
+        trafficEdgeCoeff_ = toTrafficEdgeCoeff(p.trafficRating);
 
         if (0 != speedMph_)
         {
@@ -105,6 +112,8 @@ Edge::Edge(const Edge & copy)
         this->mode_ = copy.mode_;
         this->distMile_ = copy.distMile_;
         this->speedMph_ = copy.speedMph_;
+        this->trafficEdgeCoeff_ = copy.trafficEdgeCoeff_;
+        this->trafficModeCoeff_ = copy.trafficModeCoeff_;
         this->baseTimeMin_ = copy.baseTimeMin_;
     }
 }
@@ -118,6 +127,8 @@ Edge & Edge::operator=(const Edge & rhs)
         this->mode_ = rhs.mode_;
         this->distMile_ = rhs.distMile_;
         this->speedMph_ = rhs.speedMph_;
+        this->trafficEdgeCoeff_ = rhs.trafficEdgeCoeff_;
+        this->trafficModeCoeff_ = rhs.trafficModeCoeff_;
         this->baseTimeMin_ = rhs.baseTimeMin_;
         this->path_ = rhs.path_;
         this->traffic_ = rhs.traffic_;
@@ -257,7 +268,7 @@ double Edge::trafficCoefficient(unsigned int hr, unsigned int min, EdgeStatus & 
     try
     {
         struct TrafficDatabase::TrafficDatabaseType & t = traffic_.db_.at(std::make_pair(hr, min));
-        coeff *= t.coefficient;
+        coeff = 1 - t.volume * trafficEdgeCoeff_ * (1 - trafficModeCoeff_);
         status = EdgeStatus::EDGE_OK;
     }
     catch (const std::out_of_range & oor)
@@ -275,6 +286,8 @@ void Edge::print()
     printf("%2d%c -> %2d%c (%s): ", src_->id(), tModeChar(src_->mode()), dest_->id(), tModeChar(dest_->mode()), tModeStr(mode_));
     printf("mile = %f, ", distMile_);
     printf("mph = %f, ", speedMph_);
+    printf("tMode = %f, ", trafficModeCoeff_);
+    printf("tEdge = %f, ", trafficEdgeCoeff_);
     printf("min = %f\n", baseTimeMin_);
 }
 

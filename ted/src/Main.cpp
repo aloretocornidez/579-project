@@ -41,7 +41,23 @@ int main()
     //g.print();
 
     astar::AStar a(g);
-    a.solve(52, 2, CostType::TIME_WITH_TRAFFIC, 7, 2.0);
+    a.solve(52, 41, CostType::TIME_WITH_TRAFFIC, 7, 2.0);
+    a.solve(52, 41, CostType::TIME_WITH_TRAFFIC, 11, 50.0);
+    a.solve(52, 41, CostType::TIME_WITH_TRAFFIC, 11, 51.0);
+    a.solve(52, 41, CostType::TIME_WITH_TRAFFIC, 11, 52.0);
+    a.solve(52, 41, CostType::TIME_WITH_TRAFFIC, 11, 53.0);
+    a.solve(52, 41, CostType::TIME_WITH_TRAFFIC, 11, 54.0);
+    a.solve(52, 41, CostType::TIME_WITH_TRAFFIC, 11, 55.0);
+    a.solve(52, 41, CostType::TIME_WITH_TRAFFIC, 11, 56.0);
+    a.solve(52, 41, CostType::TIME_WITH_TRAFFIC, 11, 57.0);
+    a.solve(52, 41, CostType::TIME_WITH_TRAFFIC, 11, 58.0);
+    a.solve(52, 41, CostType::TIME_WITH_TRAFFIC, 11, 59.0);
+    a.solve(52, 41, CostType::TIME_WITH_TRAFFIC, 12, 00.0);
+    a.solve(52, 41, CostType::TIME_WITH_TRAFFIC, 12, 01.0);
+    a.solve(52, 41, CostType::TIME_WITH_TRAFFIC, 12, 02.0);
+    a.solve(52, 41, CostType::TIME_WITH_TRAFFIC, 12, 03.0);
+    a.solve(52, 41, CostType::TIME_WITH_TRAFFIC, 12, 04.0);
+    a.solve(52, 41, CostType::TIME_WITH_TRAFFIC, 12, 05.0);
 
     return 0;
 }

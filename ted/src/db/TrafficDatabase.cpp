@@ -49,14 +49,12 @@ TrafficDatabaseStatus TrafficDatabase::read(const char * filename)
 
             if (!(ss >> t.hr >> comma))  retVal = TrafficDatabaseStatus::TRAFFIC_BAD_FORMAT;
             if (!(ss >> t.min >> comma)) retVal = TrafficDatabaseStatus::TRAFFIC_BAD_FORMAT;
-            if (!(ss >> trafficAmount))  retVal = TrafficDatabaseStatus::TRAFFIC_BAD_FORMAT;
+            if (!(ss >> t.volume))       retVal = TrafficDatabaseStatus::TRAFFIC_BAD_FORMAT;
 
             if (TrafficDatabaseStatus::TRAFFIC_BAD_FORMAT == retVal)
             {
                 printf("ERROR: (TrafficDatabase::read) Bad format!\n");
             }
-
-            t.coefficient = (1 - trafficAmount) * CONVERSION_FACTOR;
 
             db_[std::make_pair(t.hr, t.min)] = t;
         }
@@ -83,6 +81,6 @@ void TrafficDatabase::print()
          it != db_.end(); ++it)
     {
         printf("%02u:%02u -  traffic coeff: %f\n",
-               (it->second).hr, (it->second).min, (it->second).coefficient);
+               (it->second).hr, (it->second).min, (it->second).volume);
     }
 }
