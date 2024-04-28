@@ -59,6 +59,8 @@ private:
   TransportMode mode_;
   double distMile_;
   double speedMph_;
+  double trafficEdgeCoeff_;
+  double trafficModeCoeff_;
   double baseTimeMin_;
 
   PathDatabase &path_;

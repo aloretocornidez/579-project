@@ -59,7 +59,6 @@ public:
   Node *child(unsigned int index);
   Edge *outgoing(unsigned int index);
 
-  // double lineOfSight(unsigned int nId1, unsigned int nId2, NodeStatus & status);
   void print();
 
 private:
@@ -71,7 +70,6 @@ private:
   bool isDest_;
   bool isCatTranStop_;
   bool isBikeDepot_;
-  // bool isIntersection_;
 
   Node *children_[MAX_EDGES];
 

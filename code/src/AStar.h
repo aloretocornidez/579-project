@@ -13,6 +13,7 @@
 #define A_STAR_H
 
 #include <list>
+#include <string>
 
 #include "./graph/Edge.h"
 #include "./graph/Graph.h"
@@ -41,8 +42,6 @@ public:
 
   struct AStarNode
   {
-    // unsigned int id;
-    // TransportMode mode;
     graph::Node *gNode;
     unsigned int hr;
     double min;
@@ -78,6 +77,8 @@ private:
 
   void addToOpen(struct AStarNode *n);
   void updateOpen(struct AStarNode *n);
+
+  std::string getCostString();
 
   void reconstructPath(struct AStarNode *n);
 

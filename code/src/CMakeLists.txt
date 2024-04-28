@@ -4,6 +4,8 @@ set(PROJECT_NAME "campusNavigatorBuild")
 add_executable(
   ${PROJECT_NAME}
   main.cpp
+  parseArgs.h
+  parseArgs.cpp
   AStar.h
   AStar.cpp
   CommonUtilities.h

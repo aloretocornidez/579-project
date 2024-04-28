@@ -11,24 +11,39 @@ Project structure is as follows:
 ├── CMakeLists.txt
 ├── compile.sh
 ├── data
+│   ├── cattran.csv
 │   ├── edge.csv
-│   └── node.csv
+│   ├── node.csv
+│   ├── traffic.csv
+│   └── xlsx
 ├── external
 │   ├── CMakeLists.txt
 │   └── readme.md
+├── pseduocode.cpp.
 ├── readme.md
 └── src
     ├── AStar.cpp
     ├── AStar.h
     ├── CMakeLists.txt
+    ├── CommonUtilities.cpp
+    ├── CommonUtilities.h
     ├── db
-    │   ├── CMakeLists.txt
-    │   ├── EdgeDatabase.cpp
-    │   ├── EdgeDatabase.h
-    │   ├── NodeDatabase.cpp
-    │   └── NodeDatabase.h
+    ├── graph
     ├── main.cpp
+    ├── parseArgs.cpp
+    ├── parseArgs.h
     └── readme.md
 
-5 directories, 17 files
+7 directories, 19 files
 ```
+
+
+Valid Locations:
+
+- 1 
+- 3 
+- 8 
+- 36 
+- 42 
+- 46 
+- 59

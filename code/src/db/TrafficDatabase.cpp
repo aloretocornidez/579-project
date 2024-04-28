@@ -9,8 +9,9 @@
 //     Ted Ha (ttha)
 //
 
-#include <cstdio>
 #include <fstream>
+#include <iomanip>
+#include <iostream>
 #include <sstream>
 #include <string>
 
@@ -41,20 +42,17 @@ TrafficDatabaseStatus TrafficDatabase::read(const char *filename)
     std::string line;
     while (std::getline(f, line))
     {
-      // printf("%s\n", line.c_str());
 
       std::stringstream ss(line);
 
       if (!(ss >> t.hr >> comma)) retVal = TrafficDatabaseStatus::TRAFFIC_BAD_FORMAT;
       if (!(ss >> t.min >> comma)) retVal = TrafficDatabaseStatus::TRAFFIC_BAD_FORMAT;
-      if (!(ss >> trafficAmount)) retVal = TrafficDatabaseStatus::TRAFFIC_BAD_FORMAT;
+      if (!(ss >> t.volume)) retVal = TrafficDatabaseStatus::TRAFFIC_BAD_FORMAT;
 
       if (TrafficDatabaseStatus::TRAFFIC_BAD_FORMAT == retVal)
       {
-        printf("ERROR: (TrafficDatabase::read) Bad format!\n");
+        std::cout << "ERROR: (TrafficDatabase::read) Bad format!" << std::endl;
       }
-
-      t.coefficient = (1 - trafficAmount) * CONVERSION_FACTOR;
 
       db_[std::make_pair(t.hr, t.min)] = t;
     }
@@ -66,7 +64,7 @@ TrafficDatabaseStatus TrafficDatabase::read(const char *filename)
   }
   else
   {
-    printf("ERROR: (TrafficDatabase::read) fstream::open failed!\n");
+    std::cout << "ERROR: (TrafficDatabase::read) fstream::open failed!" << std::endl;
     return TrafficDatabaseStatus::TRAFFIC_FILE_OPEN_FAILED;
   }
 
@@ -79,6 +77,6 @@ void TrafficDatabase::print()
 {
   for (std::map<std::pair<unsigned int, unsigned int>, struct TrafficDatabaseType>::iterator it(db_.begin()); it != db_.end(); ++it)
   {
-    printf("%02u:%02u -  traffic coeff: %f\n", (it->second).hr, (it->second).min, (it->second).coefficient);
+    std::cout << std::setprecision(2) << (it->second).hr << ":" << std::setw(2) << std::setfill('0') << (it->second).min << " -  traffic coeff: " << std::setprecision(2) << (it->second).volume << std::endl;
   }
 }

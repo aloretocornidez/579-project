@@ -10,9 +10,11 @@
 //
 
 #include "AStar.h"
+#include "CommonUtilities.h"
 #include <cstring>
+#include <iostream>
 #include <limits>
-#include <stdio.h>
+#include <string>
 
 namespace astar
 {
@@ -39,8 +41,6 @@ AStarStatus AStar::solve(unsigned int startId, unsigned int goalId, CostType cos
   hr_ = hr;
   min_ = min;
 
-  // auto start{ std::chrono::high_resolution_clock::now() };
-
   retVal = initialize();
   if (AStarStatus::ASTAR_OK == retVal)
   {
@@ -48,11 +48,6 @@ AStarStatus AStar::solve(unsigned int startId, unsigned int goalId, CostType cos
   }
 
   finalize();
-
-  // auto end{ std::chrono::high_resolution_clock::now() };
-  // std::chrono::duration<double> elapsedSec{ end - start };
-  // printf("  Elapsed: %lld ns\n",
-  //     std::chrono::duration_cast<std::chrono::nanoseconds>(elapsedSec).count());
 
   return retVal;
 }
@@ -113,7 +108,6 @@ AStarStatus AStar::run()
 
   while ((false == foundGoal) && (false == open_.empty()))
   {
-    //
     // 1. Find the lowest f in the open list, place it in the closed list
     currNode = open_.front();
     open_.pop_front();
@@ -128,11 +122,9 @@ AStarStatus AStar::run()
       break;
     }
 
-    //
     // 2. Expand the node
     retVal = findChildren(currNode);
 
-    //
     // 3. For each child
     struct AStarNode *child(nullptr);
     for (unsigned int i(0); i < (currNode->numChildren); ++i)
@@ -178,13 +170,13 @@ AStarStatus AStar::run()
     else
     {
       retVal = AStarStatus::ASTAR_GOAL_NULL;
-      printf("ERROR: (AStar::run) goal_ is NULL\n");
+      std::cout << "ERROR: (AStar::run) goal_ is NULL" << std::endl;
     }
   }
   else
   {
     retVal = AStarStatus::ASTAR_FAILED_TO_FIND_GOAL;
-    printf("ERROR: (AStar::run) Failed to find the goal state!\n");
+    std::cout << "ERROR: (AStar::run) Failed to find the goal state!" << std::endl;
   }
 
   return retVal;
@@ -352,26 +344,51 @@ void AStar::updateOpen(struct AStarNode *n)
   }
 }
 
+std::string AStar::getCostString()
+{
+  if (this->costType_ == CostType::DISTANCE)
+  {
+    return "Distance";
+  }
+  else if (costType_ == CostType::TIME_NO_TRAFFIC)
+  {
+    return "Time with no traffic";
+  }
+  else if (costType_ == CostType::TIME_WITH_TRAFFIC)
+  {
+    return "Time with traffic";
+  }
+  else if (costType_ == CostType::UNKNOWN)
+  {
+    return "Unknown";
+  }
+
+  return "";
+}
+
 void AStar::reconstructPath(struct AStarNode *n)
 {
   solution_.clear();
 
   struct AStarNode *currNode(n);
 
-  // To print the solution from the start node,
-  // push parent nodes in the front of the solution list
+  // To print the solution from the start node, push parent nodes in the front of the solution list
   while (nullptr != currNode)
   {
     solution_.push_front(currNode);
     currNode = currNode->parent;
   }
 
+  printf("Time %2u:%02u:\n", hr_, static_cast<unsigned int>(min_));
+  std::cout << "Optimization Type: " << getCostString() << std::endl;
+  std::cout << "Path: " << std::endl;
   unsigned int order(1);
   for (std::list<struct AStarNode *>::iterator it(solution_.begin()); it != solution_.end(); ++it)
   {
     printf("  %2d:  %u%c  (%f)\n", order, ((*it)->gNode)->id(), tModeChar(((*it)->gNode)->mode()), (*it)->g);
     ++order;
   }
+  printf("\n");
 }
 
 } // namespace astar

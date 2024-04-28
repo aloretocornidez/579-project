@@ -51,7 +51,8 @@ PathDatabaseStatus PathDatabase::read(const char *filename)
       if (!(ss >> p.dest >> comma)) retVal = PathDatabaseStatus::PATH_BAD_FORMAT;
       if (!(ss >> dist_ft >> comma)) retVal = PathDatabaseStatus::PATH_BAD_FORMAT;
       if (!(ss >> straight_ft >> comma)) retVal = PathDatabaseStatus::PATH_BAD_FORMAT;
-      if (!(ss >> mode)) retVal = PathDatabaseStatus::PATH_BAD_FORMAT;
+      if (!(ss >> mode >> comma)) retVal = PathDatabaseStatus::PATH_BAD_FORMAT;
+      if (!(ss >> p.trafficRating)) retVal = PathDatabaseStatus::PATH_BAD_FORMAT;
 
       if (PathDatabaseStatus::PATH_BAD_FORMAT == retVal)
       {
@@ -107,7 +108,7 @@ void PathDatabase::print()
 {
   for (std::map<std::pair<unsigned int, unsigned int>, struct PathDatabaseType>::iterator it(db_.begin()); it != db_.end(); ++it)
   {
-    printf("%2u -> %2u, dist = %f, straight = %f, mode = ", (it->second).src, (it->second).dest, (it->second).dist_mile, (it->second).straight_mile);
+    printf("%2u -> %2u, dist = %f, straight = %f, traffic = %u, mode = ", (it->second).src, (it->second).dest, (it->second).dist_mile, (it->second).straight_mile, (it->second).trafficRating);
 
     switch ((it->second).mode)
     {

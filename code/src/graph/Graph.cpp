@@ -157,15 +157,6 @@ GraphStatus Graph::buildEdges()
       {
         struct LocationDatabase::LocationDatabaseType &locSrc(loc_.db_.at((it->second).src));
 
-        // if (true == locSrc.isDest)
-        //{
-        //     src = nodes_.at(std::make_pair((it->second).src, TransportMode::NONE));
-        // }
-        // else
-        //{
-        //     src = nodes_.at(std::make_pair((it->second).src, TransportMode::CATTRAN));
-        // }
-
         src = nodes_.at(std::make_pair((it->second).src, TransportMode::CATTRAN));
         dest = nodes_.at(std::make_pair((it->second).dest, TransportMode::CATTRAN));
 
@@ -185,15 +176,6 @@ GraphStatus Graph::buildEdges()
       {
         struct LocationDatabase::LocationDatabaseType &locSrc(loc_.db_.at((it->second).src));
 
-        // if (true == locSrc.isDest)
-        //{
-        //     src = nodes_.at(std::make_pair((it->second).src, TransportMode::NONE));
-        // }
-        // else
-        //{
-        //     src = nodes_.at(std::make_pair((it->second).src, TransportMode::BIKE));
-        // }
-
         src = nodes_.at(std::make_pair((it->second).src, TransportMode::BIKE));
         dest = nodes_.at(std::make_pair((it->second).dest, TransportMode::BIKE));
 
@@ -212,15 +194,6 @@ GraphStatus Graph::buildEdges()
       case PathDatabase::PathDatabaseMode::WALK:
       {
         struct LocationDatabase::LocationDatabaseType &locSrc(loc_.db_.at((it->second).src));
-
-        // if (true == locSrc.isDest)
-        //{
-        //     src = nodes_.at(std::make_pair((it->second).src, TransportMode::NONE));
-        // }
-        // else
-        //{
-        //     src = nodes_.at(std::make_pair((it->second).src, TransportMode::WALK));
-        // }
 
         src = nodes_.at(std::make_pair((it->second).src, TransportMode::WALK));
         dest = nodes_.at(std::make_pair((it->second).dest, TransportMode::WALK));

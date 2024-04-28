@@ -29,7 +29,7 @@ public:
   {
     unsigned int hr;
     unsigned int min;
-    double coefficient;
+    double volume;
   };
 
   TrafficDatabase();
