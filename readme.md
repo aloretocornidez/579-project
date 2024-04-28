@@ -13,13 +13,11 @@ Note: Alphabetized by Net Id.
 
 This directory contains the source code of the project.
 
-## Report
-
-The report director contains all presentation and submission material.
-
 ## Documentation
 
 The documentation directory contains all additional work that was completed in
 the fruition of the project.
 
+## Ted
 
+Folder for Ted to work in.
