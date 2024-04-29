@@ -39,6 +39,8 @@ static constexpr double WALK_KPH = 5.0;     // km/h, ~3.11 mph
 static constexpr double BIKE_KPH = 16.0;    // km/h, ~9.94 mph
 static constexpr double CATTRAN_KPH = 12.0; // km/h, ~6.85 mph
 
+static constexpr double MIN_BETWEEN_CATTRAN = 20.0;
+
 static constexpr double KM_TO_MILE = 0.621371;
 static constexpr double HR_TO_MIN = 60.0;
 static constexpr double MIN_IN_HR = 60.0;

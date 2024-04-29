@@ -211,10 +211,18 @@ double Edge::trafficCost(unsigned int hr, double min, EdgeStatus &status)
     {
       try
       {
+        intMin = static_cast<unsigned int>(min);
+        double residualMin = min - intMin;
         struct CatTranDatabase::CatTranDatabaseType &c = cattran_.db_.at(std::make_tuple(src_->id(), hr, intMin));
 
-        time = timeMin + c.minToNext;
+        double minToWait(c.minToNext - residualMin);
+        if (minToWait < 0)
+        {
+          minToWait += MIN_BETWEEN_CATTRAN;
+        }
 
+        time = timeMin + minToWait;
+        
         status = EdgeStatus::EDGE_OK;
       }
       catch (const std::out_of_range &oor)
