@@ -36,8 +36,10 @@ enum class CostType : unsigned int
 };
 
 static constexpr double WALK_KPH    = 5.0;   // km/h, ~3.11 mph
-static constexpr double BIKE_KPH    = 16.0;  // km/h, ~9.94 mph
-static constexpr double CATTRAN_KPH = 12.0;  // km/h, ~6.85 mph
+static constexpr double BIKE_KPH    = 10.0;  // km/h, ~9.94 mph
+static constexpr double CATTRAN_KPH = 100.0;  // km/h, ~6.85 mph
+
+static constexpr double MIN_BETWEEN_CATTRAN = 20.0;
 
 static constexpr double KM_TO_MILE = 0.621371;
 static constexpr double HR_TO_MIN = 60.0;
@@ -47,14 +49,14 @@ double fastestMode();
 
 // How each mode of transportation is affected by traffic between classes
 static constexpr double WALK_TRAFFIC_MODE_COEFF    = 0.90;
-static constexpr double BIKE_TRAFFIC_MODE_COEFF    = 0.70;
+static constexpr double BIKE_TRAFFIC_MODE_COEFF    = 0.30;
 static constexpr double CATTRAN_TRAFFIC_MODE_COEFF = 0.30;
 
-static constexpr double TRAFFIC_RATING_5 = 2.5;
-static constexpr double TRAFFIC_RATING_4 = 2.05;
-static constexpr double TRAFFIC_RATING_3 = 1.6;
-static constexpr double TRAFFIC_RATING_2 = 1.15;
-static constexpr double TRAFFIC_RATING_1 = 0.7;
+static constexpr double TRAFFIC_RATING_5 = 3.5;//2.5;
+static constexpr double TRAFFIC_RATING_4 = 0.0;//2.05;
+static constexpr double TRAFFIC_RATING_3 = 0.0;//1.6;
+static constexpr double TRAFFIC_RATING_2 = 0.0;//1.15;
+static constexpr double TRAFFIC_RATING_1 = 0.0;//0.7;
 
 double toTrafficEdgeCoeff(unsigned int rating);
 
